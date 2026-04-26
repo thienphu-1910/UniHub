@@ -8,6 +8,39 @@
 
 ### Level 1 — System Context
 <!-- Sơ đồ: UniHub Workshop + actors + hệ thống ngoài -->
+```plantuml
+@startuml c4_level1_system_context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context — UniHub Workshop
+
+Person(student, "Sinh viên", "Xem lịch workshop, đăng ký,\nnhận QR, check-in")
+Person(organizer, "Ban tổ chức", "Tạo và quản lý workshop,\nxem thống kê, upload PDF")
+Person(checkin_staff, "Nhân sự check-in", "Quét mã QR tại cửa phòng\n(hỗ trợ offline)")
+
+System(unihub, "UniHub Workshop", "Số hóa toàn bộ quy trình từ\nđăng ký đến check-in sự kiện")
+
+System_Ext(payment_gw, "Payment Gateway", "Xử lý thanh toán workshop có phí\n(VNPay / Stripe sandbox)")
+System_Ext(llm_api, "LLM API", "Tạo bản tóm tắt AI từ nội dung PDF\n(OpenAI / Gemini)")
+System_Ext(email_svc, "Email Service", "Gửi email xác nhận đăng ký\nvà thông báo sự kiện (SendGrid)")
+System_Ext(fcm, "Push Notification", "Gửi thông báo đẩy đến\nthiết bị sinh viên (FCM)")
+System_Ext(legacy_sis, "Student Info System\n(Legacy)", "Hệ thống quản lý sinh viên hiện tại\nChỉ export CSV định kỳ ban đêm")
+
+Rel(student, unihub, "Xem workshop, đăng ký,\nnhận QR")
+Rel(organizer, unihub, "Quản lý workshop,\nxem thống kê")
+Rel(checkin_staff, unihub, "Quét QR, check-in\n(online + offline)")
+
+Rel(unihub, payment_gw, "Xử lý thanh toán\ncó phí", )
+Rel(unihub, llm_api, "Gửi nội dung PDF\nđể tóm tắt")
+Rel(unihub, email_svc, "Gửi email\nxác nhận")
+Rel(unihub, fcm, "Gửi push\nnotification")
+Rel(legacy_sis, unihub, "Export file CSV\nsinh viên (đêm)")
+
+@enduml
+```
+
 
 ### Level 2 — Container
 <!-- Sơ đồ: web app, mobile app, backend API, database, message broker, ... -->
@@ -20,9 +53,9 @@ LAYOUT_TOP_DOWN()
 LAYOUT_WITH_LEGEND()
 
 ' Actors
-Person(organizer, "Ban tổ chức", "Quản lý workshop & theo dõi đăng ký")
-Person(student, "Sinh viên", "Đăng ký tham gia workshop")
-Person(employee, "Nhân viên check-in", "Xác nhận tham dự")
+Person(student, "Sinh viên", "Xem lịch workshop, đăng ký,\nnhận QR, check-in")
+Person(organizer, "Ban tổ chức", "Tạo và quản lý workshop,\nxem thống kê, upload PDF")
+Person(checkin_staff, "Nhân sự check-in", "Quét mã QR tại cửa phòng\n(hỗ trợ offline)")
 
 Container_Boundary(c1, "UniHub Workshop System") {
     
@@ -35,7 +68,7 @@ Container_Boundary(c1, "UniHub Workshop System") {
     Container(backend, "Backend API", "Node.js, Express", "Cung cấp JSON/HTTP API")
 
     ' Row 3: Internal Services & Queue
-    ContainerQueue(mq, "Message Queue", "RabbitMQ", "Hàng đợi xử lý")
+    ContainerQueue(mq, "Message Queue", "BullMQ", "Hàng đợi xử lý")
     Container(qr_consumer, "QR Worker", "Node.js", "Tạo mã QR")
     Container(email_consumer, "Email Worker", "Node.js", "Xử lý gửi mail")
     Container(csv_service, "CSV Import", "Node.js", "Nhập file CSV")
@@ -53,7 +86,7 @@ Container_Ext(std_export, "Student Data Source", "Hệ thống quản lý sinh v
 ' Relationships: Actors to UI
 Rel(organizer, spa_org, "Sử dụng")
 Rel(student, spa_std, "Sử dụng")
-Rel(employee, spa_cie, "Sử dụng")
+Rel(checkin_staff, spa_cie, "Sử dụng")
 
 ' UI to Backend (Tất cả hội tụ về Backend)
 Rel(spa_org, backend, "Gọi", "HTTPS/JSON")
