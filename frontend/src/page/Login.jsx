@@ -6,11 +6,19 @@ import Button from '../component/common/Button';
 import Checkbox from '../component/common/Checkbox';
 import AuthTabs from '../component/common/AuthTabs';
 
+import { authenticationService } from '../services/authenticationService';
+
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
+  }
+
+  const onSubmit = () => {
+    authenticationService.signIn(email, password);
   }
 
   return (
@@ -23,7 +31,10 @@ const Login = () => {
           <p className="text-slate-500 text-sm">Please enter your details to access your account.</p>
         </div>
 
-        <form className="w-full max-w-sm flex flex-col gap-5">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }} className="w-full max-w-sm flex flex-col gap-5">
           <Input 
             id="email" 
             label="Email Address" 
@@ -31,6 +42,7 @@ const Login = () => {
             icon={Mail} 
             placeholder="name@university.edu" 
             required 
+            onChange = {(e) => setEmail(e.target.value)}
           />
 
           <Input 
@@ -40,12 +52,13 @@ const Login = () => {
             icon={Lock} 
             placeholder="••••••••" 
             required 
-            className={!showPassword ? "font-mono tracking-widest text-lg py-[0.625rem]" : ""}
+            className={showPassword === false ? "font-mono tracking-widest text-lg py-2.5" : ""}
             rightElement={
               <button type="button" onClick={togglePasswordVisibility} className="text-slate-400 hover:text-slate-600 focus:outline-none p-1 cursor-pointer">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             }
+            onChange = {(e) => setPassword(e.target.value)}
           />
 
           <div className="flex items-center justify-between mt-1">

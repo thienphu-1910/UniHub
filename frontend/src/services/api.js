@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const http = axios.create({
+export const api = axios.create({
   baseURL: "http://localhost:5000/unihub/api",
-  timeout: 100000
+  timeout: 100000,
 });
