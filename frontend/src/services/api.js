@@ -1,6 +1,6 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:5000/unihub/api",
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 100000,
 });

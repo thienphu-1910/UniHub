@@ -17,9 +17,12 @@ const Login = () => {
     setShowPassword((prev) => !prev);
   }
 
-  const onSubmit = () => {
-    authenticationService.signIn(email, password);
-  }
+  const onSubmit = async () => {
+    if (!email || !password) return; // Validation cơ bản
+
+    const data = await authenticationService.signIn(email, password);
+    console.log(data);
+  };
 
   return (
     <AuthLayout>

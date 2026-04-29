@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const Button = ({ children, type = "button", variant = "primary", className = "", ...props }) => {
   const baseStyles = "w-full flex justify-center items-center py-2.5 px-4 rounded-md shadow-sm text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors";
