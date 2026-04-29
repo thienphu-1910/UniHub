@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../component/layout/AuthLayout';
 import Input from '../component/common/Input';
 import Button from '../component/common/Button';
@@ -12,6 +13,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -22,12 +24,17 @@ const Login = () => {
 
     const data = await authenticationService.signIn(email, password);
     console.log(data);
+
+    if (data?.isAuthenticated) {
+      localStorage.setItem('isAuthenticated', 'true');
+      navigate('/home');
+    }
   };
 
   return (
     <AuthLayout>
       <div className="flex flex-col h-full items-center px-8 py-10 sm:px-14">
-        <AuthTabs />
+        {/* <AuthTabs /> */}
 
         <div className="text-center w-full mb-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome Back</h2>
@@ -67,9 +74,9 @@ const Login = () => {
           <div className="flex items-center justify-between mt-1">
             <Checkbox id="remember-me" name="remember-me" label="Remember me" />
             <div className="text-sm">
-              <a href="#" className="font-semibold text-[#0088cc] hover:text-[#005580] transition-colors">
+              {/* <a href="#" className="font-semibold text-[#0088cc] hover:text-[#005580] transition-colors">
                 Forgot password?
-              </a>
+              </a> */}
             </div>
           </div>
 
