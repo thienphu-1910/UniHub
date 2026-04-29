@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 const Input = forwardRef(({ label, id, icon: Icon, rightElement, error, type = "text", className = "", ...props }, ref) => {
   return (
