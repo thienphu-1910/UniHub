@@ -9,5 +9,15 @@ export const usersService = {
       console.log(e);
       return null;
     }
+  },
+
+  getUserViaId: async (id) => {
+    try {
+      const user = await usersRepository.getUserViaId(id);
+      return user;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 }

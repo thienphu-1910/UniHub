@@ -1,5 +1,13 @@
 import { usersService } from "../services/users.service.js";
 import { authService } from "../services/auth.service.js";
+import jwt from "jsonwebtoken";
+
+const cookiesOptions = {
+  httpOnly: true,
+  sameSite: "strict",
+  secure: true,
+  path: "/",
+};
 
 export const authController = {
   authenticateUser: async (req, res) => {
@@ -22,17 +30,10 @@ export const authController = {
         return res.status(401).json({
           message: "Can not authenticate!",
         });
-      }
+      }  
 
-      const options = {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: true,
-        path: "/",
-      };
-
-      res.cookie('accessToken', accessToken, options);
-      res.cookie('refresToken', refreshToken, options);
+      res.cookie('accessToken', accessToken, cookiesOptions);
+      res.cookie('refresToken', refreshToken, cookiesOptions);
 
       return res.status(200).json({
         success: true,
@@ -55,6 +56,34 @@ export const authController = {
   },
 
   createToken: async (req, res) => {
-    
+    const token = req.cookies.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({
+        status: "TOKEN_MISSING",
+        message: "Token is missing",
+      });
+    }
+
+    jwt.verify(token, process.env.REFRESH_SECRET, (err, decoded) => {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({
+          status: "TOKEN_EXPIRED",
+          message: "Token is expired",
+        });
+      }
+
+      const user = await usersService.getUserViaId(decoded.userId);
+      const accessToken = jwt.sign(user, process.env.ACCESS_SECRET, {
+        expiresIn: process.env.ACCESS_EXP,
+      });
+
+      res.cookies('accessToken', accessToken, cookiesOptions);
+
+      return res.status(200).json({
+        success: true,
+        message: "Create new access token",
+      })
+    });
   }
 }
