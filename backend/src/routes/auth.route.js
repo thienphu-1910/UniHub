@@ -5,4 +5,6 @@ const authRoute = express.Router();
 
 authRoute.post('/signin', authController.authenticateUser);
 
+authRoute.get('/refresh-token', )
+
 export { authRoute };

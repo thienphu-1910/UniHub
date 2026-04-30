@@ -52,5 +52,9 @@ export const authController = {
         message: "Internal Server Error",
       });
     }
+  },
+
+  createToken: async (req, res) => {
+    
   }
 }
