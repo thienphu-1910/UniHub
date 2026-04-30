@@ -3,6 +3,7 @@ import FormContainer from "../component/common/FormContainer";
 import { useForm } from "react-hook-form";
 import { Upload } from "lucide-react";
 import { useRef } from "react";
+import Button from "../component/common/Button";
 
 const OrganizerWorkshopPage = () => {
   const { register, handleSubmit } = useForm();
@@ -104,6 +105,9 @@ const OrganizerWorkshopPage = () => {
             </FormInput>
           </div>
         </div>
+        <Button className="w-full mt-5 active:scale-98">
+          Publish Workshop
+        </Button>
       </FormContainer>
     </div>
   );
