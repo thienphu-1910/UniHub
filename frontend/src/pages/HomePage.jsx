@@ -1,4 +1,3 @@
-import React from 'react';
 import { Plus, Bell, HelpCircle, Search, MoreVertical } from 'lucide-react';
 
 const HomePage = () => {
