@@ -5,7 +5,6 @@ import AuthLayout from '../component/layout/AuthLayout';
 import Input from '../component/common/Input';
 import Button from '../component/common/Button';
 import Checkbox from '../component/common/Checkbox';
-import AuthTabs from '../component/common/AuthTabs';
 
 import { authenticationService } from '../services/authenticationService';
 
