@@ -65,25 +65,32 @@ export const authController = {
       });
     }
 
-    jwt.verify(token, process.env.REFRESH_SECRET, (err, decoded) => {
-      if (err.name === "TokenExpiredError") {
-        return res.status(401).json({
-          status: "TOKEN_EXPIRED",
-          message: "Token is expired",
-        });
-      }
+    try {
+      const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
 
       const user = await usersService.getUserViaId(decoded.userId);
       const accessToken = jwt.sign(user, process.env.ACCESS_SECRET, {
         expiresIn: process.env.ACCESS_EXP,
       });
 
-      res.cookies('accessToken', accessToken, cookiesOptions);
+      res.cookies("accessToken", accessToken, cookiesOptions);
 
       return res.status(200).json({
         success: true,
         message: "Create new access token",
-      })
-    });
+      });
+    } catch (e) {
+      if (e.name === "TokenExpiredError") {
+        return res.status(401).json({
+          status: "TOKEN_EXPIRED",
+          message: "Token is expired",
+        });
+      }
+      
+      return res.status(401).json({
+        status: "INVALID_TOKEN",
+        message: "Invalid token",
+      });
+    }
   }
 }
