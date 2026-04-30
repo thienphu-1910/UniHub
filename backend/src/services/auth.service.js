@@ -26,12 +26,12 @@ export const authService = {
       },
       process.env.REFRESH_SECRET,
       {
-        expiresIn: "7d",
+        expiresIn: process.env.REFRESH_EXP,
       },
     );
 
     const accessToken = jwt.sign(payload, process.env.ACCESS_SECRET, {
-      expiresIn: "15m",
+      expiresIn: ACCESS_EXP,
     });
 
     return {
