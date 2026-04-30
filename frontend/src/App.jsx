@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import HomePage from './pages/HomePage';
 import DashboardLayout from './component/layout/DashboardLayout';
 import './index.css';
+import OrganizerWorkshopPage from './pages/OrganizerWorkshopPage';
 
 function App() {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
@@ -17,7 +18,7 @@ function App() {
         {/* Protected Routes with Sidebar Layout */}
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<HomePage />} />
-          <Route path="/workshops" element={<HomePage />} /> {/* Placeholder */}
+          <Route path="/workshops" element={<OrganizerWorkshopPage />} /> {/* Placeholder */}
           <Route path="/users" element={<HomePage />} /> {/* Placeholder */}
           <Route path="/settings" element={<HomePage />} /> {/* Placeholder */}
           <Route path="/help" element={<HomePage />} /> {/* Placeholder */}
