@@ -22,7 +22,6 @@ const Login = () => {
     if (!email || !password) return; // Validation cơ bản
 
     const data = await authenticationService.signIn(email, password);
-    console.log(data);
 
     if (data?.isAuthenticated) {
       localStorage.setItem('isAuthenticated', 'true');
