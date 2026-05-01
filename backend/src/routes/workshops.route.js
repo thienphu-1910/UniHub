@@ -9,7 +9,7 @@ import { uploadMiddleware } from "../middleware/file.middleware.js";
 const workshopsRoute = express.Router();
 
 workshopsRoute.post(
-  "/workshop",
+  "/workshops",
   apikeyMiddleware,
   auth,
   checkRole([userRoles.ORGANIZER]),
