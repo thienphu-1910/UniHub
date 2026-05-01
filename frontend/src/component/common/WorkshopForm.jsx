@@ -24,16 +24,17 @@ const WorkshopForm = () => {
     formData.append("speakerBio", data.speakerBio || "");
 
     if (data.speakerAvatar) {
-      formData.append("avatar", data.speakerAvatar);
+      formData.append("avatar", data.speakerAvatar[0]);
+      console.log(data.speakerAvatar[0]);
     }
     if (data.pdfFile) {
-      formData.append("pdf", data.pdfFile);
+      formData.append("pdf", data.pdfFile[0]);
     }
 
     try {
       const { success, data } = await workshopService.addNewWorkshop(formData);
 
-      if (success && data) reset();
+      //if (success && data) reset();
     } catch (e) {
       console.log(e);
     }

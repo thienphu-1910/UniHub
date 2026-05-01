@@ -6,7 +6,7 @@ export const workshopService = {
       const response = await api.post('/api/workshop', formData, {
         headers: {
           "x-api-key": import.meta.env.VITE_API_KEY,
-          "Content-Type": "multipart/form-data"
+          //"Content-Type": "multipart/form-data"
         }
       });
 
