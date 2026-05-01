@@ -30,7 +30,7 @@ export const authController = {
       }
 
       res.cookie("accessToken", accessToken, cookiesOptions);
-      res.cookie("refresToken", refreshToken, cookiesOptions);
+      res.cookie("refreshToken", refreshToken, cookiesOptions);
 
       return res.status(200).json({
         success: true,
@@ -70,7 +70,7 @@ export const authController = {
         expiresIn: process.env.ACCESS_EXP,
       });
 
-      res.cookies("accessToken", accessToken, cookiesOptions);
+      res.cookie("accessToken", accessToken, cookiesOptions);
 
       return res.status(200).json({
         success: true,
