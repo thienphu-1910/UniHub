@@ -18,4 +18,20 @@ workshopsRoute.post(
   workshopsController.addNewWorkshop,
 );
 
+workshopsRoute.get(
+  "/workshops",
+  apikeyMiddleware,
+  auth,
+  checkRole([userRoles.ORGANIZER, userRoles.STUDENT]),
+  workshopsController.getWorkshopList
+);
+
+workshopsRoute.get(
+  "/workshops/:id",
+  apikeyMiddleware,
+  auth,
+  checkRole([userRoles.ORGANIZER, userRoles.STUDENT]),
+  workshopsController.getWorkshopDetail
+);
+
 export { workshopsRoute}

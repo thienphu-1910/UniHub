@@ -44,5 +44,24 @@ export const workshopsService = {
       console.log(e);
       throw e;
     }
+  },
+
+  getWorkshopList: async (page = 1, limit = 10) => {
+    try {
+      const response = await workshopsRepository.getWorkshopList(page, limit);
+      return response;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  },
+
+  getWorkshopDetail: async (workshopId) => {
+    try {
+      const response = await workshopsRepository.getWorkshopDetail(workshopId);
+      return response;
+    } catch (e) {
+      throw e;
+    }
   }
 }

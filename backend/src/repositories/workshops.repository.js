@@ -1,13 +1,13 @@
 import sql from "../config/db.js";
 
 export const workshopsRepository = {
-  addNewWorkshop: async({
+  addNewWorkshop: async ({
     title,
     description,
     aiSummary,
     summaryStatus,
     speaker,
-    room, 
+    room,
     roomDiagram,
     startTime,
     endTime,
@@ -27,5 +27,43 @@ export const workshopsRepository = {
       console.log(e);
       return null;
     }
+  },
+
+  getWorkshop: async (page = 1, limit = 10) => {
+    try {
+      const response = await sql`
+        SELECT id, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", room
+        FROM workshops
+        WHERE start_time >= CURRENT_TIMESTAMP
+      `;
+
+      const offset = (page - 1) * limit;
+      
+      const list = response.slice(offset, offset + limit);
+
+      return {
+        list,
+        offset,
+        totalPage: response.length,
+        limit,
+      }
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  },
+
+  getWorkshopDetail: async (workshopId) => {
+    try {
+      const response = await sql`
+        SELECT id, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", room, ai_summary AS "aiSummary"
+        FROM workshops
+        WHERE id = ${workshopId}
+      `;
+
+      return response ? response[0] : null;
+    } catch (e) {
+      throw e;
+    }
   }
-}
+};
