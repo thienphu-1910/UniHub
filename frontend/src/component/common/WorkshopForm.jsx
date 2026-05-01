@@ -34,7 +34,7 @@ const WorkshopForm = () => {
     try {
       const { success, data } = await workshopService.addNewWorkshop(formData);
 
-      //if (success && data) reset();
+      if (success && data) reset();
     } catch (e) {
       console.log(e);
     }

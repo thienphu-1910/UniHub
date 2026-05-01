@@ -39,7 +39,7 @@ export const authController = {
           user: {
             fullName: user.fullName,
             role: user.role,
-            studentId: user.studentId,
+            studentId: user.studentId || null,
             email: user.email,
           },
         },
