@@ -7,7 +7,7 @@ const ImageFileSchema = z
   .refine((file) => file !== null, "Vui lòng chọn ảnh")
   .refine((file) => file?.size <= MAX_FILE_SIZE, "Kích thước ảnh tối đa 5MB")
   .refine(
-    (file) => ["image/jpeg", "image/png", "image/webp, image/jpeg"].includes(file?.type),
+    (file) => ["image/jpeg", "image/png", "image/webp, image/jpeg"].includes(file?.mimetype),
     "Chỉ chấp nhận .jpg, .png, .webp",
   );
 
@@ -16,14 +16,14 @@ const PdfFileSchema = z
   .refine((file) => file !== null, "Vui lòng upload tài liệu PDF")
   .refine((file) => file?.size <= MAX_FILE_SIZE, "Kích thước PDF tối đa 5MB")
   .refine(
-    (file) => file?.type === "application/pdf",
+    (file) => file?.mimetype === "application/pdf",
     "Chỉ chấp nhận định dạng .pdf",
   );
 
 
 export const WorkshopSchema = z.object({
   title: z.string().trim().min(1, "Title không được để trống"),
-  description: z.string().trim().min(1, "Description không được để trống"),
+  description: z.string().trim(),
   capacity: z.coerce.number().int().positive(),
   price: z.coerce.number().min(0),
   room: z.string().trim().min(1),

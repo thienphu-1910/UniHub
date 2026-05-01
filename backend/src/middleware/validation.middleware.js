@@ -5,11 +5,11 @@ export const workshopValidation = (req, res, next) => {
   const payload = {
     ...req.body,
     speakerAvatar: req.files?.['avatar']?.[0] || null,
-    pdfFile: req.files?.['pdfFile']?.[0] || null,
+    pdfFile: req.files?.['pdf']?.[0] || null,
   }
 
   try {
-    const workshopValidatedData = WorkshopSchema.parse(payload);
+    const workshopValidatedData = WorkshopSchema.parse(payload);    
     req.validatedData = workshopValidatedData;
     next();
   } catch (e) {

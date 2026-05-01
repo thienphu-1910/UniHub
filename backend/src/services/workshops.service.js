@@ -1,4 +1,3 @@
-import { userRoles } from "../enums/role.enum.js";
 import { usersRepository } from "../repositories/users.repository.js";
 import { workshopsRepository } from "../repositories/workshops.repository.js";
 import { uploadToCloudinary } from "../utils/imageUpload.js";
@@ -11,10 +10,10 @@ export const workshopsService = {
         throw new Error('User not found');
       }
 
-      const speakerAvatar = payload.avatar;
+      const speakerAvatar = payload.speakerAvatar;      
       let speakerAvatarUrl = null;
       if (speakerAvatar) {
-        const uploadResult = await uploadToCloudinary(speakerAvatar.buffer); 
+        const uploadResult = await uploadToCloudinary(speakerAvatar.buffer);         
         speakerAvatarUrl = uploadResult.secure_url;
       }
 
