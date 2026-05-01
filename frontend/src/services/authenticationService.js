@@ -30,6 +30,15 @@ export const authenticationService = {
     }
   },
 
+  createToken: async () => {
+    try {
+      await api.post("/api/refresh-token", {}, {});
+    } catch (e) {
+      console.log(e)
+      throw e;
+    }
+  },
+
   logout: () => {
     api.post("/api/logout", {}, {});
   }

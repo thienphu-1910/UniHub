@@ -6,6 +6,8 @@ import DashboardLayout from './component/layout/DashboardLayout';
 import './index.css';
 import OrganizerWorkshopPage from './pages/OrganizerWorkshopPage';
 import { useEffect } from 'react';
+import SettingPage from './pages/SettingPage';
+import { authenticationService } from './services/authenticationService';
 
 
 function App() {  
@@ -14,7 +16,10 @@ function App() {
 
       console.warn(event.detail.message);
 
-      window.location.href = '/login';
+      if (window.location.href !== '/login') {
+        authenticationService.logout();
+        window.location.href = "/login";
+      }      
     }
 
     window.addEventListener('unauthorized-access', handleLogout);
@@ -33,7 +38,7 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/workshops" element={<OrganizerWorkshopPage />} /> {/* Placeholder */}
           <Route path="/users" element={<HomePage />} /> {/* Placeholder */}
-          <Route path="/settings" element={<HomePage />} /> {/* Placeholder */}
+          <Route path="/settings" element={<SettingPage />} /> {/* Placeholder */}
           <Route path="/help" element={<HomePage />} /> {/* Placeholder */}
           
           {/* Catch-all route inside layout - redirect to home */}

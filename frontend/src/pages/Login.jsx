@@ -28,10 +28,6 @@ const Login = () => {
     }
   };
 
-  useEffect(() => {
-    authenticationService.logout();    
-  }, []);
-
   return (
     <AuthLayout>
       <div className="flex flex-col h-full items-center px-8 py-10 sm:px-14">
