@@ -17,7 +17,7 @@ const WorkshopForm = () => {
     formData.append("capacity", data.capacity);
     formData.append("price", data.price || 0);
     formData.append("room", data.room || "");
-    formData.append("starTime", data.starTime);
+    formData.append("startTime", data.startTime);
     formData.append("endTime", data.endTime);
 
     formData.append("speakerName", data.speakerName || "");
