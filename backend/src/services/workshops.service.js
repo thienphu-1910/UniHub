@@ -1,13 +1,21 @@
 import { userRoles } from "../enums/role.enum.js";
 import { usersRepository } from "../repositories/users.repository.js";
 import { workshopsRepository } from "../repositories/workshops.repository.js";
+import { uploadToCloudinary } from "../utils/imageUpload.js";
 
 export const workshopsService = {
   addNewWorkshop: async (payload, userId) => {
     try {
-      const { role } = await usersRepository.getUserViaId(userId);;
-      if (role !== userRoles.ORGANIZER) {
-        return null;
+      const user = await usersRepository.getUserViaId(userId);;
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const speakerAvatar = payload.avatar;
+      let speakerAvatarUrl = null;
+      if (speakerAvatar) {
+        const uploadResult = await uploadToCloudinary(speakerAvatar.buffer); 
+        speakerAvatarUrl = uploadResult.secure_url;
       }
 
       const workshopPayload = {
@@ -15,13 +23,17 @@ export const workshopsService = {
         description: payload.description || "",
         aiSummary: payload.aiSummary || "",
         summaryStatus: payload.summaryStatus || "none",
-        speaker: payload.speaker || {},
+        speaker: {
+          name: payload.speakerName || "",
+          bio: payload.speakerBio || "",
+          avatarUrl: speakerAvatarUrl || null,
+        },
         room: payload.room || "",
         roomDiagram: payload.roomDiagram || {},
         startTime: payload.startTime,
         endTime: payload.endTime,
         capacity: payload.capacity || 0,
-        availableSlots: payload.availableSlots,
+        availableSlots: payload.capacity,
         price: payload.price || 0,
         createdBy: userId,
       };
@@ -31,7 +43,7 @@ export const workshopsService = {
       return response;
     } catch (e) {
       console.log(e);
-      return null;
+      throw e;
     }
   }
 }

@@ -5,8 +5,20 @@ import "dotenv/config"
 import cookieParser from "cookie-parser";
 
 const app = express();
+const corsOptions = {
+  // 1. Chỉ cho phép origin cụ thể (Không được dùng '*')
+  origin: "http://localhost:3000",
 
-app.use(cors());
+  // 2. Cho phép gửi kèm cookie, headers xác thực...
+  credentials: true,
+
+  // 3. Các method được phép
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+
+  // 4. Các headers được phép từ phía client
+  allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+};
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(cookieParser());
 
@@ -23,5 +35,7 @@ app.listen(PORT, () => {
 });
 
 import { authRoute } from "./routes/auth.route.js";
+import { workshopsRoute } from "./routes/workshops.route.js";
 
 app.use('/api', authRoute);
+app.use('/api', workshopsRoute);
