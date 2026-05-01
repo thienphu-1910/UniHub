@@ -28,6 +28,10 @@ export const authenticationService = {
         isAuthenticated: false,
       }
     }
+  },
+
+  logout: () => {
+    api.post("/api/logout", {}, {});
   }
 }
 

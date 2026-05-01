@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../component/layout/AuthLayout';
@@ -24,10 +24,13 @@ const Login = () => {
     const data = await authenticationService.signIn(email, password);
 
     if (data?.isAuthenticated) {
-      localStorage.setItem('isAuthenticated', 'true');
       navigate('/home');
     }
   };
+
+  useEffect(() => {
+    authenticationService.logout();    
+  }, []);
 
   return (
     <AuthLayout>
