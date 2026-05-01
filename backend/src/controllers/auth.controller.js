@@ -20,20 +20,17 @@ export const authController = {
         });
       }
 
-      const {
-        accessToken,
-        refreshToken,
-        isAuthenticated,
-      } = await authService.authenticateUser(req.body.password, user);
+      const { accessToken, refreshToken, isAuthenticated } =
+        await authService.authenticateUser(req.body.password, user);
 
       if (isAuthenticated === false) {
         return res.status(401).json({
           message: "Can not authenticate!",
         });
-      }  
+      }
 
-      res.cookie('accessToken', accessToken, cookiesOptions);
-      res.cookie('refresToken', refreshToken, cookiesOptions);
+      res.cookie("accessToken", accessToken, cookiesOptions);
+      res.cookie("refresToken", refreshToken, cookiesOptions);
 
       return res.status(200).json({
         success: true,
@@ -44,9 +41,9 @@ export const authController = {
             role: user.role,
             studentId: user.studentId,
             email: user.email,
-          }
-        }
-      })
+          },
+        },
+      });
     } catch (e) {
       console.log(e);
       return res.status(500).json({
@@ -86,11 +83,29 @@ export const authController = {
           message: "Token is expired",
         });
       }
-      
+
       return res.status(401).json({
         status: "INVALID_TOKEN",
         message: "Invalid token",
       });
     }
-  }
-}
+  },
+
+  logout: async (req, res) => {
+    try {
+      res.clearCookie("accessToken", cookiesOptions);
+      res.clearCookie("refreshToken", cookiesOptions);
+
+      return res.status(200).json({
+        success: true,
+        message: "Logout successfully",
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        success: false,
+        message: "Can not logout",
+      });
+    }
+  },
+};
