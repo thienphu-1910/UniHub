@@ -8,6 +8,8 @@ import OrganizerWorkshopPage from './pages/OrganizerWorkshopPage';
 import { useEffect } from 'react';
 import SettingPage from './pages/SettingPage';
 import { authenticationService } from './services/authenticationService';
+import RoleBasedRoute from './component/common/RoleBasedRoute';
+import { userRoles } from './utils/userRole';
 
 
 function App() {  
@@ -32,17 +34,33 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
-        {/* Protected Routes with Sidebar Layout */}
-        <Route element={<DashboardLayout />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/workshops" element={<OrganizerWorkshopPage />} /> {/* Placeholder */}
-          <Route path="/users" element={<HomePage />} /> {/* Placeholder */}
-          <Route path="/settings" element={<SettingPage />} /> {/* Placeholder */}
-          <Route path="/help" element={<HomePage />} /> {/* Placeholder */}
-          
-          {/* Catch-all route inside layout - redirect to home */}
-          <Route path="*" element={<Navigate to="/home" replace />} />
+
+        <Route
+          element={
+            <RoleBasedRoute
+              allowedRoles={[
+                userRoles.ORGANIZER,
+                userRoles.STAFF,
+                userRoles.STUDENT,
+              ]}
+            />
+          }
+        >
+          <Route element={<DashboardLayout />}>
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/settings" element={<SettingPage />} />
+            <Route
+              element={
+                <RoleBasedRoute
+                  allowedRoles={[userRoles.ORGANIZER, userRoles.STUDENT]}
+                />
+              }
+            >
+              <Route path="/workshops" element={<OrganizerWorkshopPage />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </Route>
         </Route>
 
         {/* Redirect from root based on auth status */}

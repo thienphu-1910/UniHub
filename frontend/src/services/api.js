@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { userStore } from "../store/useAuthStore";
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 100000,
@@ -38,6 +38,7 @@ api.interceptors.response.use(
             message: "Your session has expired. Please login again!",
           },
         });
+        const clearUser = userStore((state) => state.clearUser);
         window.dispatchEvent(logoutEvent);
         return Promise.reject(refreshError);
       }

@@ -43,8 +43,16 @@ const WorkshopForm = () => {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
       <h1 className="font-bold text-2xl ">Create New Workshop</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-3">
-        <WorkshopDetailsForm register={register} watch={watch} setValue={setValue} errors={errors}/>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full flex flex-col gap-3"
+      >
+        <WorkshopDetailsForm
+          register={register}
+          watch={watch}
+          setValue={setValue}
+          errors={errors}
+        />
         <SpeakerForm register={register} setValue={setValue} errors={errors} />
         <Button type="submit" className="w-full mt-5 active:scale-98">
           Publish Workshop

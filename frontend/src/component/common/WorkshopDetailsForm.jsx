@@ -19,13 +19,19 @@ const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
 
   return (
     <FormContainer className={"w-full h-fit px-5 py-4"}>
-      <h2 className="font-bold text-xl mb-4 w-full">Workshop Details</h2>
+      <div className="flex flex-col mb-4">
+        <h2 className="font-bold text-xl w-full">Workshop Details</h2>
+        <p3 className="font-semibold text-base text-red-500">
+          Field with * is required
+        </p3>
+      </div>
       <div className="w-full flex flex-row gap-5 justify-center items-start">
         <div className="w-full flex flex-col gap-3">
           {/* Workshop Title - Required */}
           <div className="flex flex-col w-full">
             <FormInput
               label="Workshop Title"
+              required={true}
               className={`w-full border rounded-md py-1 px-2 ${
                 errors.title
                   ? "border-red-500"
@@ -46,6 +52,7 @@ const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
             <div className="flex flex-col w-full text-start">
               <FormInput
                 label="Capacity"
+                required={true}
                 className={`w-full border rounded-md py-1 px-2 ${
                   errors.capacity
                     ? "border-red-500"
@@ -103,6 +110,7 @@ const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
           <div className="flex flex-col w-full">
             <FormInput
               label="Room"
+              required={true}
               className={`w-full border rounded-md py-1 px-2 ${
                 errors.room
                   ? "border-red-500"
@@ -121,6 +129,7 @@ const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
           <div className="flex flex-col w-full">
             <FormInput
               label="Start Time"
+              required={true}
               className={`w-full border rounded-md py-1 px-2 ${
                 errors.startTime
                   ? "border-red-500"
@@ -139,13 +148,14 @@ const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
           <div className="flex flex-col w-full">
             <FormInput
               label="End Time"
+              required={true}
               className={`w-full border rounded-md py-1 px-2 ${
                 errors.endTime
                   ? "border-red-500"
                   : "border-gray-500 focus:border-black"
               }`}
               type="datetime-local"
-              {...register("endTime", {required: "End Time is required"})}
+              {...register("endTime", { required: "End Time is required" })}
             />
             {errors.endTime && (
               <span className="text-red-500 text-xs mt-1">
