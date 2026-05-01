@@ -10,6 +10,7 @@ import SettingPage from './pages/SettingPage';
 import { authenticationService } from './services/authenticationService';
 import RoleBasedRoute from './component/common/RoleBasedRoute';
 import { userRoles } from './utils/userRole';
+import WorkshopsPage from './pages/WorkshopsPage';
 
 
 function App() {  
@@ -56,7 +57,16 @@ function App() {
                 />
               }
             >
-              <Route path="/workshops" element={<OrganizerWorkshopPage />} />
+              <Route path="/workshops" element={<WorkshopsPage />} />
+            </Route>
+            <Route
+              element={
+                <RoleBasedRoute
+                  allowedRoles={[userRoles.ORGANIZER]}
+                />
+              }
+            >
+              <Route path="/create-workshops" element={<OrganizerWorkshopPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/home" replace />} />
