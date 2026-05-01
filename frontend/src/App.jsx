@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import HomePage from './pages/HomePage';
@@ -7,20 +7,20 @@ import './index.css';
 import OrganizerWorkshopPage from './pages/OrganizerWorkshopPage';
 import { useEffect } from 'react';
 
-function App() {
-  const nav = useNavigate();
+
+function App() {  
   useEffect(() => {
     const handleLogout = (event) => {
 
       console.warn(event.detail.message);
 
-      nav('/login');
+      window.location.href = '/login';
     }
 
     window.addEventListener('unauthorized-access', handleLogout);
 
     return () => window.removeEventListener('unauthorized-access', handleLogout);
-  }, [nav])
+  }, [])
 
   return (
     <Router>
