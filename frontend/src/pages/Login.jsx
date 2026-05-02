@@ -22,8 +22,8 @@ const Login = () => {
     if (!email || !password) return; // Validation cơ bản
 
     const data = await authenticationService.signIn(email, password);
-
-    if (data?.success) {
+    console.log(data)
+    if (data?.isAuthenticated) {
       navigate('/home');
     }
   };

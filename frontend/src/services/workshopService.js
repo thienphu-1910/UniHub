@@ -34,9 +34,21 @@ export const workshopService = {
         }
       );
 
-      console.log(response)
-
       return response?.data?.data;
+    } catch (e) {
+      console.log(e);
+    }
+  },
+
+  getWorkshopDetail: async (workshopId) => {
+    try {
+      const response = await api.get(`/api/workshops/${workshopId}`, {
+        headers: {
+          'x-api-key': import.meta.env.VITE_API_KEY
+        }
+      });
+      return response?.data?.data;
+
     } catch (e) {
       console.log(e);
     }
