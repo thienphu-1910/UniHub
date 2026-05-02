@@ -23,7 +23,7 @@ const Login = () => {
 
     const data = await authenticationService.signIn(email, password);
 
-    if (data?.isAuthenticated) {
+    if (data?.success) {
       navigate('/home');
     }
   };

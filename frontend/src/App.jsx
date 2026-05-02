@@ -1,34 +1,39 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import HomePage from './pages/HomePage';
-import DashboardLayout from './component/layout/DashboardLayout';
-import './index.css';
-import OrganizerWorkshopPage from './pages/OrganizerWorkshopPage';
-import { useEffect } from 'react';
-import SettingPage from './pages/SettingPage';
-import { authenticationService } from './services/authenticationService';
-import RoleBasedRoute from './component/common/RoleBasedRoute';
-import { userRoles } from './utils/userRole';
-import WorkshopsPage from './pages/WorkshopsPage';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import HomePage from "./pages/HomePage";
+import DashboardLayout from "./component/layout/DashboardLayout";
+import "./index.css";
+import OrganizerWorkshopPage from "./pages/OrganizerWorkshopPage";
+import { useEffect } from "react";
+import SettingPage from "./pages/SettingPage";
+import RoleBasedRoute from "./component/common/RoleBasedRoute";
+import { userRoles } from "./utils/userRole";
+import WorkshopsPage from "./pages/WorkshopsPage";
+import { userStore } from "./store/useAuthStore";
+import WorkshopDetailPage from "./pages/WorkshopDetailPage";
 
+function App() {
+  const user = userStore((state) => state.user);
 
-function App() {  
   useEffect(() => {
     const handleLogout = (event) => {
-
       console.warn(event.detail.message);
 
-      if (window.location.href !== '/login') {
-        authenticationService.logout();
-        window.location.href = "/login";
-      }      
-    }
+      //authenticationService.logout();
+      window.location.href = "/login";
+    };
 
-    window.addEventListener('unauthorized-access', handleLogout);
+    window.addEventListener("unauthorized-access", handleLogout);
 
-    return () => window.removeEventListener('unauthorized-access', handleLogout);
-  }, [])
+    return () =>
+      window.removeEventListener("unauthorized-access", handleLogout);
+  }, []);
 
   return (
     <Router>
@@ -58,15 +63,15 @@ function App() {
               }
             >
               <Route path="/workshops" element={<WorkshopsPage />} />
+              <Route path="/workshops/:id" element={<WorkshopDetailPage />} />
             </Route>
             <Route
-              element={
-                <RoleBasedRoute
-                  allowedRoles={[userRoles.ORGANIZER]}
-                />
-              }
+              element={<RoleBasedRoute allowedRoles={[userRoles.ORGANIZER]} />}
             >
-              <Route path="/create-workshops" element={<OrganizerWorkshopPage />} />
+              <Route
+                path="/create-workshops"
+                element={<OrganizerWorkshopPage />}
+              />
             </Route>
 
             <Route path="*" element={<Navigate to="/home" replace />} />
@@ -74,7 +79,7 @@ function App() {
         </Route>
 
         {/* Redirect from root based on auth status */}
-        {/* <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} /> */}
+        <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />
       </Routes>
     </Router>
   );

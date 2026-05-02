@@ -22,11 +22,19 @@ export const workshopService = {
     }
   },
 
-  getWorkshopList: async () => {
+  getWorkshopList: async (page, limit) => {
     try {
-      const response = await api.get("/api/workshops", {
-        "x-api-key": import.meta.env.VITE_API_KEY,
-      });
+      const response = await api.get(
+        "/api/workshops",
+        {
+          params: { page, limit },
+          headers: {
+            "x-api-key": import.meta.env.VITE_API_KEY,
+          },
+        }
+      );
+
+      console.log(response)
 
       return response?.data?.data;
     } catch (e) {
