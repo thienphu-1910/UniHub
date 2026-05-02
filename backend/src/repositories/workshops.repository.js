@@ -17,7 +17,6 @@ export const workshopsRepository = {
     createdBy,
   }) => {
     try {
-      console.log(price)
       const response = await sql`
       INSERT INTO workshops (title, description, ai_summary, summary_status, speaker, room, room_diagram, start_time, end_time, capacity, available_slots, price, created_by)
       VALUES (${title}, ${description}, ${aiSummary}, ${summaryStatus}, ${speaker}, ${room}, ${roomDiagram}, ${startTime}, ${endTime}, ${capacity}, ${availableSlots}, ${price}, ${createdBy})
@@ -39,7 +38,6 @@ export const workshopsRepository = {
       `;
 
       const offset = (page - 1) * limit;
-      
       const list = response.slice(offset, offset + limit);
 
       const totalPage = response.length < limit ? 1 : response.length / limit;
