@@ -1,3 +1,4 @@
+import { response } from "express";
 import { workshopsService } from "../services/workshops.service.js";
 
 export const workshopsController = {
@@ -48,11 +49,17 @@ export const workshopsController = {
   },
 
   getWorkshopDetail: async (req, res) => {
-    const workshopId = req.query.id;
+    const workshopId = req.params.id;
 
     try {
-      const reponse = await workshopsService.getWorkshopDetail(workshopId);
-      return response;
+      const response = await workshopsService.getWorkshopDetail(workshopId);
+      return res.status(200).json({
+        success: true,
+        message: "Get workshop detail successfully",
+        data: {
+          workshop: response,
+        }
+      });
     } catch (e) {
       console.log(e);
       return res.status(500).json({

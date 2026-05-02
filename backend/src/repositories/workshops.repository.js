@@ -57,10 +57,12 @@ export const workshopsRepository = {
 
   getWorkshopDetail: async (workshopId) => {
     try {
+      const id = workshopId ?? ""
+
       const response = await sql`
         SELECT id, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", room, ai_summary AS "aiSummary"
         FROM workshops
-        WHERE id = ${workshopId}
+        WHERE id = ${id}
       `;
 
       return response ? response[0] : null;
