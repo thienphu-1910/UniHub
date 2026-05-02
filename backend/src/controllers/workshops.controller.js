@@ -34,7 +34,10 @@ export const workshopsController = {
 
     try {
       const response = await workshopsService.getWorkshopList(page, limit);
-      return response;
+      return res.status(200).json({
+        success: true,
+        data: response,
+      });
     } catch (e) {
       console.log(e);
       return res.status(500).json({

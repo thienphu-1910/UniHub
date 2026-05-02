@@ -17,6 +17,7 @@ export const workshopsRepository = {
     createdBy,
   }) => {
     try {
+      console.log(price)
       const response = await sql`
       INSERT INTO workshops (title, description, ai_summary, summary_status, speaker, room, room_diagram, start_time, end_time, capacity, available_slots, price, created_by)
       VALUES (${title}, ${description}, ${aiSummary}, ${summaryStatus}, ${speaker}, ${room}, ${roomDiagram}, ${startTime}, ${endTime}, ${capacity}, ${availableSlots}, ${price}, ${createdBy})
@@ -29,7 +30,7 @@ export const workshopsRepository = {
     }
   },
 
-  getWorkshop: async (page = 1, limit = 10) => {
+  getWorkshopList: async (page = 1, limit = 10) => {
     try {
       const response = await sql`
         SELECT id, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", room
@@ -41,10 +42,11 @@ export const workshopsRepository = {
       
       const list = response.slice(offset, offset + limit);
 
+      const totalPage = response.length < limit ? 1 : response.length / limit;
       return {
         list,
         offset,
-        totalPage: response.length,
+        totalPage: totalPage,
         limit,
       }
     } catch (e) {
