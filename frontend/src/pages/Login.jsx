@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../component/layout/AuthLayout';
 import Input from '../component/common/Input';
 import Button from '../component/common/Button';
 import Checkbox from '../component/common/Checkbox';
-import AuthTabs from '../component/common/AuthTabs';
 
 import { authenticationService } from '../services/authenticationService';
 
@@ -23,10 +22,8 @@ const Login = () => {
     if (!email || !password) return; // Validation cơ bản
 
     const data = await authenticationService.signIn(email, password);
-    console.log(data);
-
+    console.log(data)
     if (data?.isAuthenticated) {
-      localStorage.setItem('isAuthenticated', 'true');
       navigate('/home');
     }
   };

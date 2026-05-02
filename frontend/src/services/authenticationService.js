@@ -1,3 +1,4 @@
+import { userStore } from "../store/useAuthStore";
 import { api } from "./api";
 
 export const authenticationService = {
@@ -8,15 +9,16 @@ export const authenticationService = {
         password,
       }, {
         headers: {
-          'x-api-key': import.meta.env.VITE_API_KEY,
+          //'x-api-key': import.meta.env.VITE_API_KEY,
           'Content-Type': 'application/json',
         }
       });
 
       if (response?.data?.data?.user) {
+        userStore.getState().setUser(response.data.data.user);
         return {
           isAuthenticated: true,
-          user: response.data.data.user,
+          //user: response.data.data.user,
         };
       }
 
@@ -28,6 +30,19 @@ export const authenticationService = {
         isAuthenticated: false,
       }
     }
+  },
+
+  createToken: async () => {
+    try {
+      await api.post("/api/refresh-token", {}, {});
+    } catch (e) {
+      console.log(e)
+      throw e;
+    }
+  },
+
+  logout: () => {
+    api.post("/api/logout", {}, {});
   }
 }
 

@@ -31,7 +31,7 @@ export const authService = {
     );
 
     const accessToken = jwt.sign(payload, process.env.ACCESS_SECRET, {
-      expiresIn: ACCESS_EXP,
+      expiresIn: process.env.ACCESS_EXP,
     });
 
     return {

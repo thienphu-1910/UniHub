@@ -28,3 +28,24 @@ export const auth = (req, res, next) => {
     });
   }
 };
+
+export const checkRole = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(500).json({
+        code: "SERVER_ERROR",
+        message: "Auth middleware must be called before checkRole",
+      });
+    }
+
+    const user = req.user;
+    if (allowedRoles.includes(user.role) === false) {
+      return res.status(403).json({
+        code: "FORBIDDEN",
+        message: "You have no permission to do this!"
+      });
+    }
+
+    next();
+  }
+}
