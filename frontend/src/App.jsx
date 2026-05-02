@@ -9,7 +9,7 @@ import Register from "./pages/Register";
 import HomePage from "./pages/HomePage";
 import DashboardLayout from "./component/layout/DashboardLayout";
 import "./index.css";
-import OrganizerWorkshopPage from "./pages/OrganizerWorkshopPage";
+import CreateWorkshopPage from "./pages/CreateWorkshopPage";
 import { useEffect } from "react";
 import SettingPage from "./pages/SettingPage";
 import RoleBasedRoute from "./component/common/RoleBasedRoute";
@@ -70,7 +70,7 @@ function App() {
             >
               <Route
                 path="/create-workshops"
-                element={<OrganizerWorkshopPage />}
+                element={<CreateWorkshopPage />}
               />
             </Route>
 

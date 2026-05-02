@@ -1,13 +1,12 @@
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { workshopService } from "../services/workshopService";
-import { Spinner } from "flowbite-react"
 import Button from "../component/common/Button";
 import WorkshopTable from "../component/common/WorkshopTable";
 import Loading from "../component/common/Loading";
 
 const WorkshopsPage = () => {
-
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // 1. Lấy giá trị từ URL, nếu không có thì mặc định là 1 và 10
@@ -67,7 +66,7 @@ const WorkshopsPage = () => {
         <>
           <div className="w-full flex flex-row justify-between mb-4 items-baseline">
             <h1 className="font-bold text-3xl mb-3">Workshops</h1>
-            <Button className="max-w-fit ">
+            <Button className="max-w-fit " onClick={() => {navigate('/create-workshops')}}>
               + Add new workshops
             </Button>
           </div>
