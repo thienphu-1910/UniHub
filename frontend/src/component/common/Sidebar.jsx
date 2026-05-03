@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Settings, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, HelpCircle } from 'lucide-react';
 
 const Sidebar = () => {
   const menuItems = [
     { name: 'Dashboard', path: '/home', icon: LayoutDashboard },
     { name: 'Workshops', path: '/workshops', icon: Calendar },
-    { name: 'Users', path: '/users', icon: Users },
+   // { name: 'Users', path: '/users', icon: Users },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
@@ -13,7 +13,7 @@ const Sidebar = () => {
     <div className="w-64 bg-[#0a2540] text-slate-300 flex flex-col h-screen fixed top-0 left-0 shadow-xl z-20">
       {/* Logo Area */}
       <div className="p-6 flex items-center space-x-3 mb-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md">
+        <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md">
           <span className="text-lg font-bold">UH</span>
         </div>
         <div>

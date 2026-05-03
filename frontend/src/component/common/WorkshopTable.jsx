@@ -7,6 +7,7 @@ import {
   XCircleIcon,
   CircleUser,
 } from "lucide-react";
+import { formatToVND } from "../../utils/currency";
 
 const WorkshopTable = ({ workshops }) => {
   const navigate = useNavigate();
@@ -74,9 +75,9 @@ const WorkshopTable = ({ workshops }) => {
                   {/* Speaker */}
                   <td className="">
                     <div className="flex items-center gap-2 overflow-hidden">
-                      {w.speakerAvatar ? (
+                      {w.speaker.avatarUrl ? (
                         <img
-                          src={w.speakerAvatar}
+                          src={w.speaker.avatarUrl}
                           alt="Speaker avatar"
                           className="size-8 rounded-full border-blue-500 border-2"
                         />
@@ -95,7 +96,7 @@ const WorkshopTable = ({ workshops }) => {
 
                   {/* Price */}
                   <td className="py-3 px-3 text-sm font-medium text-blue-600">
-                    ${w.price.toFixed(2)}
+                    {formatToVND(w.price)}
                   </td>
 
                   {/* Capacity */}

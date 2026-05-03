@@ -1,9 +1,11 @@
 import Button from "../component/common/Button";
 import Container from "../component/common/Container";
-import { User, Mail, LogOut } from "lucide-react";
+import { User, Mail, LogOut, ShieldUser } from "lucide-react";
 import { authenticationService } from "../services/authenticationService";
+import { userStore } from "../store/useAuthStore";
 
 const SettingPage = () => {
+  const user = userStore((state) => state.user);
 
   const handleLogout = () => {
     authenticationService.logout();
@@ -29,7 +31,7 @@ const SettingPage = () => {
                   id="fullname"
                   className="outline-none"
                   readOnly
-                  value="Nguyen Van A"
+                  value={user.fullName}
                 />
               </div>
             </div>
@@ -41,15 +43,49 @@ const SettingPage = () => {
                 <Mail />
                 <input
                   id="mail"
-                  className="outline-none"
+                  className="outline-none truncate"
                   readOnly
-                  value="example@gmail.com"
+                  value={user.email}
                 />
               </div>
             </div>
           </div>
+          <div className="w-full flex flex-row  justify-between">
+            <div className="w-60 flex flex-col gap-1">
+              <label htmlFor="#fullname" className="font-semibold">
+                Role
+              </label>
+              <div className="flex flex-row justify-start text-blue-500 gap-2 px-2 py-1 w-full border rounded-md">
+                <ShieldUser />
+                <input
+                  id="fullname"
+                  className="outline-none uppercase"
+                  readOnly
+                  value={user.role}
+                />
+              </div>
+            </div>
+            {/* <div className="w-60 flex flex-col gap-1">
+              <label htmlFor="#mail" className="font-semibold">
+                Email
+              </label>
+              <div className="flex flex-row justify-start text-blue-500 gap-2 px-2 py-1 w-full border rounded-md">
+                <Mail />
+                <input
+                  id="mail"
+                  className="outline-none truncate"
+                  readOnly
+                  value={user.email}
+                />
+              </div>
+            </div> */}
+          </div>
 
-          <Button variant='dangerous' className="self-end max-w-50" onClick={handleLogout}>
+          <Button
+            variant="dangerous"
+            className="self-end max-w-50"
+            onClick={handleLogout}
+          >
             <LogOut />
             Sign Out
           </Button>
