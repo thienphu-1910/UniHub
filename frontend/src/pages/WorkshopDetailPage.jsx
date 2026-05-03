@@ -9,33 +9,7 @@ import WorkshopDetail from "../component/common/WorkshopDetail";
 import RegisteredStudents from "../component/common/RegisteredStudents";
 import { userStore } from "../store/useAuthStore";
 import { userRoles } from "../utils/userRole";
-
-const mockData = [
-  {
-    fullName: "Nguyễn Văn A",
-    email: "nguyenvana@gmail.com",
-    registeredAt: "2024-05-04T01:00:00.000Z",
-    status: "confirmed",
-  },
-  {
-    fullName: "Trần Thị Bé",
-    email: "tranthibe@yahoo.com",
-    registeredAt: "2024-05-05T09:30:00.000Z",
-    status: "pending",
-  },
-  {
-    fullName: "Lê Hoàng Cường",
-    email: "lhcuong.work@domain.vn",
-    registeredAt: "2024-05-06T14:15:00.000Z",
-    status: "confirmed",
-  },
-  {
-    fullName: "Phạm Đại Dương",
-    email: "daiduong_pham@outlook.com",
-    registeredAt: new Date().toISOString(), // Lấy thời gian hiện tại ở định dạng ISO
-    status: "pending",
-  },
-];
+import WorkshopRegistration from "../component/common/WorkshopRegistration";
 
 const WorkshopDetailPage = () => {
   const user = userStore((state) => state.user);
@@ -45,7 +19,6 @@ const WorkshopDetailPage = () => {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [workshop, setWorkshop] = useState({});
-  const [students, setStudents] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -54,16 +27,11 @@ const WorkshopDetailPage = () => {
       setError(null);
 
       try {
-        const [workshopRes, registrationRes] = await Promise.all([
-          workshopService.getWorkshopDetail(id),
-          registrationService.getRegisteredStudents(id),
-        ]);
+        const workshopRes = await workshopService.getWorkshopDetail(id);
 
         if (isMounted) {
           setWorkshop(workshopRes?.workshop ?? {});
           console.log(workshopRes);
-          setStudents(registrationRes?.list ?? []);
-          console.log(registrationRes);
         }
       } catch (e) {
         if (isMounted) setError(e);
@@ -111,7 +79,10 @@ const WorkshopDetailPage = () => {
           <WorkshopDetail workshop={workshop} />
 
           {user.role === userRoles.ORGANIZER && (
-            <RegisteredStudents students={mockData} />
+            <RegisteredStudents workshopId={id} />
+          )}
+          {user.role === userRoles.STUDENT && (
+            <WorkshopRegistration workshopId={id} price={workshop.price}/>
           )}
         </div>
       )}
