@@ -1,19 +1,19 @@
-import { usersRepository } from "../repositories/users.repository.js";
-import { workshopsRepository } from "../repositories/workshops.repository.js";
+import { userRepository } from "../repositories/user.repository.js";
+import { workshopRepository } from "../repositories/workshop.repository.js";
 import { uploadToCloudinary } from "../utils/imageUpload.js";
 
-export const workshopsService = {
+export const workshopService = {
   addNewWorkshop: async (payload, userId) => {
     try {
-      const user = await usersRepository.getUserViaId(userId);;
+      const user = await userRepository.getUserViaId(userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
-      const speakerAvatar = payload.speakerAvatar;      
+      const speakerAvatar = payload.speakerAvatar;
       let speakerAvatarUrl = null;
       if (speakerAvatar) {
-        const uploadResult = await uploadToCloudinary(speakerAvatar.buffer);         
+        const uploadResult = await uploadToCloudinary(speakerAvatar.buffer);
         speakerAvatarUrl = uploadResult.secure_url;
       }
 
@@ -37,7 +37,7 @@ export const workshopsService = {
         createdBy: userId,
       };
 
-      const response = await workshopsRepository.addNewWorkshop(workshopPayload);
+      const response = await workshopRepository.addNewWorkshop(workshopPayload);
 
       return response;
     } catch (e) {
@@ -48,7 +48,7 @@ export const workshopsService = {
 
   getWorkshopList: async (page = 1, limit = 10) => {
     try {
-      const response = await workshopsRepository.getWorkshopList(page, limit);
+      const response = await workshopRepository.getWorkshopList(page, limit);
       return response;
     } catch (e) {
       console.log(e);
@@ -58,10 +58,10 @@ export const workshopsService = {
 
   getWorkshopDetail: async (workshopId) => {
     try {
-      const response = await workshopsRepository.getWorkshopDetail(workshopId);
+      const response = await workshopRepository.getWorkshopDetail(workshopId);
       return response;
     } catch (e) {
       throw e;
     }
-  }
-}
+  },
+};

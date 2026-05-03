@@ -1,4 +1,4 @@
-import { usersService } from "../services/users.service.js";
+import { userService } from "../services/user.service.js";
 import { authService } from "../services/auth.service.js";
 import jwt from "jsonwebtoken";
 
@@ -12,7 +12,7 @@ const cookiesOptions = {
 export const authController = {
   authenticateUser: async (req, res) => {
     try {
-      const user = await usersService.getUserViaEmail(req.body.email);
+      const user = await userService.getUserViaEmail(req.body.email);
 
       if (!user) {
         return res.status(401).json({
@@ -65,7 +65,7 @@ export const authController = {
     try {
       const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
 
-      const user = await usersService.getUserViaId(decoded.userId);
+      const user = await userService.getUserViaId(decoded.userId);
       const accessToken = jwt.sign(user, process.env.ACCESS_SECRET, {
         expiresIn: process.env.ACCESS_EXP,
       });

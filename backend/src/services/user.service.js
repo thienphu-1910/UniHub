@@ -1,9 +1,9 @@
-import { usersRepository } from "../repositories/users.repository.js";
+import { userRepository } from "../repositories/user.repository.js";
 
-export const usersService = {
+export const userService = {
   getUserViaEmail: async (email) => {
     try {
-      const user = await usersRepository.getUserViaEmail(email);
+      const user = await userRepository.getUserViaEmail(email);
       return user;
     } catch (e) {
       console.log(e);
@@ -13,11 +13,11 @@ export const usersService = {
 
   getUserViaId: async (id) => {
     try {
-      const user = await usersRepository.getUserViaId(id);
+      const user = await userRepository.getUserViaId(id);
       return user;
     } catch (e) {
       console.log(e);
       return null;
     }
-  }
-}
+  },
+};

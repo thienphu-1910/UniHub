@@ -1,12 +1,12 @@
 import { response } from "express";
-import { workshopsService } from "../services/workshops.service.js";
+import { workshopService } from "../services/workshop.service.js";
 
-export const workshopsController = {
+export const workshopController = {
   addNewWorkshop: async (req, res) => {
     const payload = req.validatedData;
 
     try {
-      const response = await workshopsService.addNewWorkshop(payload, req.user.userId);
+      const response = await workshopService.addNewWorkshop(payload, req.user.userId);
 
       if (!response) return res.status(500).json({
         success: false,
@@ -34,7 +34,7 @@ export const workshopsController = {
     const limit = parseInt(req.query.limit) || 10;
 
     try {
-      const response = await workshopsService.getWorkshopList(page, limit);
+      const response = await workshopService.getWorkshopList(page, limit);
       return res.status(200).json({
         success: true,
         data: response,
@@ -52,7 +52,7 @@ export const workshopsController = {
     const workshopId = req.params.id;
 
     try {
-      const response = await workshopsService.getWorkshopDetail(workshopId);
+      const response = await workshopService.getWorkshopDetail(workshopId);
       return res.status(200).json({
         success: true,
         message: "Get workshop detail successfully",

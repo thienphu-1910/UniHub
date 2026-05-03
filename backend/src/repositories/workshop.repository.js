@@ -1,6 +1,6 @@
 import sql from "../config/db.js";
 
-export const workshopsRepository = {
+export const workshopRepository = {
   addNewWorkshop: async ({
     title,
     description,

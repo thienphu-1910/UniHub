@@ -1,6 +1,6 @@
 import sql from "../config/db.js";
 
-export const usersRepository = {
+export const userRepository = {
   getUserViaEmail: async (email) => {
     try {
       const user = await sql`

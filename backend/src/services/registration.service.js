@@ -91,4 +91,15 @@ export const registrationService = {
       throw error;
     }
   },
+  getAllWorkshopRegisteredStudent: async (workshopId) => {
+    try {
+      const response =
+        await registrationRepository.getAllWorkshopRegisteredStudent(
+          workshopId,
+        );
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  },
 };
