@@ -4,7 +4,7 @@ export const registrationController = {
   createRegistration: async (req, res) => {
     try {
       const result = await registrationService.createRegistration({
-        workshopId: req.body.workshopId,
+        workshopId: req.params.workshopId,
         user: req.user,
       });
 

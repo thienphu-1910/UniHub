@@ -7,8 +7,10 @@ import { userRoles } from "../enums/role.enum.js";
 const registrationRoute = express.Router();
 
 registrationRoute.post(
-  "/registrations",
+  "/registrations/:workshopId",
+  apikeyMiddleware,
   auth,
+  checkRole([userRoles.STUDENT]),
   registrationController.createRegistration,
 );
 
