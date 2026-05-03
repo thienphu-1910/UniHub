@@ -1,8 +1,10 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import "dotenv/config"
+import "dotenv/config";
 import cookieParser from "cookie-parser";
+import { authRoute } from "./routes/auth.route.js";
+import { registrationRoute } from "./routes/registration.route.js";
 
 const app = express();
 const corsOptions = {
@@ -26,16 +28,17 @@ const PORT = Number.parseInt(process.env.PORT) || 3000;
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('Server is running smoothly.');
+app.get("/", (req, res) => {
+  res.send("Server is running smoothly.");
 });
+
+app.use("/api", authRoute);
+app.use("/api", registrationRoute);
 
 app.listen(PORT, () => {
-    console.log(`Server is live on http://localhost:${PORT}`);
+  console.log(`Server is live on http://localhost:${PORT}`);
 });
 
-import { authRoute } from "./routes/auth.route.js";
 import { workshopsRoute } from "./routes/workshops.route.js";
 
-app.use('/api', authRoute);
 app.use('/api', workshopsRoute);
