@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "flowbite-react/plugin/tailwindcss";
+@source "../.flowbite-react/class-list.json";
 
 body {
   margin: 0;
@@ -11,4 +13,8 @@ body {
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+}
+
+button {
+  cursor: pointer;
 }

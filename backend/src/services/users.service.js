@@ -7,7 +7,7 @@ export const usersService = {
       return user;
     } catch (e) {
       console.log(e);
-      return null;
+      throw e;
     }
   },
 
