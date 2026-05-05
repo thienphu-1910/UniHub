@@ -17,6 +17,7 @@ import { userRoles } from "./utils/userRole";
 import WorkshopsPage from "./pages/WorkshopsPage";
 import { userStore } from "./store/useAuthStore";
 import WorkshopDetailPage from "./pages/WorkshopDetailPage";
+import CheckinPage from "./pages/CheckinPage";
 
 function App() {
   const user = userStore((state) => state.user);
@@ -72,6 +73,10 @@ function App() {
                 path="/create-workshops"
                 element={<CreateWorkshopPage />}
               />
+            </Route>
+
+            <Route element={<RoleBasedRoute allowedRoles={[userRoles.STAFF]} />}>
+              <Route path="/checkin" element={<CheckinPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/home" replace />} />

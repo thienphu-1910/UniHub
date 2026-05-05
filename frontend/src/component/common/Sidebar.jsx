@@ -1,12 +1,42 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Settings, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, HelpCircle, ScanBarcode } from 'lucide-react';
+import { userStore } from '../../store/useAuthStore';
+import { userRoles } from '../../utils/userRole';
+
+const SidebarItem = ({ item }) => {
+  return (
+    <li key={item.name}>
+      <NavLink
+        to={item.path}
+        className={({ isActive }) =>
+          `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+            isActive
+              ? "bg-[#163a5f] text-white shadow-inner font-semibold"
+              : "hover:bg-[#163a5f]/50 hover:text-white"
+          }`
+        }
+      >
+        <item.icon className="w-5 h-5 opacity-90 group-hover:opacity-100" />
+        <span className="text-sm tracking-wide">{item.name}</span>
+      </NavLink>
+    </li>
+  );
+}
 
 const Sidebar = () => {
+  const { role } = userStore((state) => state.user);
+
   const menuItems = [
     { name: 'Dashboard', path: '/home', icon: LayoutDashboard },
     { name: 'Workshops', path: '/workshops', icon: Calendar },
    // { name: 'Users', path: '/users', icon: Users },
     { name: 'Settings', path: '/settings', icon: Settings },
+  ];
+
+  const staffMenuItems = [
+    { name: "Dashboard", path: "/home", icon: LayoutDashboard },
+    { name: "Checkin", path: "/checkin", icon: ScanBarcode },
+    { name: "Settings", path: "/settings", icon: Settings },
   ];
 
   return (
@@ -25,23 +55,12 @@ const Sidebar = () => {
       {/* Navigation Menu */}
       <div className="flex-1 px-4 overflow-y-auto">
         <ul className="space-y-1.5">
-          {menuItems.map((item) => (
-            <li key={item.name}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-[#163a5f] text-white shadow-inner font-semibold'
-                      : 'hover:bg-[#163a5f]/50 hover:text-white'
-                  }`
-                }
-              >
-                <item.icon className="w-5 h-5 opacity-90 group-hover:opacity-100" />
-                <span className="text-sm tracking-wide">{item.name}</span>
-              </NavLink>
-            </li>
-          ))}
+          {role !== userRoles.STAFF ? menuItems.map((item) => (
+            <SidebarItem item={item} />
+          )) : staffMenuItems.map((item) => (
+            <SidebarItem item={item} />
+          ))
+        }
         </ul>
       </div>
 
