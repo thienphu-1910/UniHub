@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../component/layout/AuthLayout';
@@ -18,13 +18,22 @@ const Login = () => {
     setShowPassword((prev) => !prev);
   }
 
+  const [loading, setLoading] = useState(false);
+
   const onSubmit = async () => {
     if (!email || !password) return; // Validation cơ bản
-
-    const data = await authenticationService.signIn(email, password);
-    console.log(data)
-    if (data?.isAuthenticated) {
-      navigate('/home');
+    
+    try {
+      setLoading(true);
+      const data = await authenticationService.signIn(email, password);
+      console.log(data);
+      if (data?.isAuthenticated) {
+        navigate("/home");
+      }
+      else setLoading(false);
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
     }
   };
 
@@ -77,8 +86,8 @@ const Login = () => {
             </div>
           </div>
 
-          <Button type="submit" className="mt-4">
-            Sign In
+          <Button type="submit" className="mt-4" disabled={loading} variant={loading ? "waiting" : "primary"}>
+            {loading ? "...Sign In" : "Sign In"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </form>
