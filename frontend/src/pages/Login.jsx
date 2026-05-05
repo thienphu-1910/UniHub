@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import AuthLayout from '../component/layout/AuthLayout';
-import Input from '../component/common/Input';
-import Button from '../component/common/Button';
-import Checkbox from '../component/common/Checkbox';
+import { useState } from "react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import AuthLayout from "../component/layout/AuthLayout";
+import Input from "../component/common/Input";
+import Button from "../component/common/Button";
+import Checkbox from "../component/common/Checkbox";
 
-import { authenticationService } from '../services/authenticationService';
+import { authenticationService } from "../services/authenticationService";
+import DisabledButton from "../component/common/DisabledButton";
+import { Spinner } from "flowbite-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,24 +18,23 @@ const Login = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
-  }
+  };
 
-  const [loading, setLoading] = useState(false);
+  const [isProcessing, setProcess] = useState(false);
 
   const onSubmit = async () => {
     if (!email || !password) return; // Validation cơ bản
-    
+
     try {
-      setLoading(true);
+      setProcess(true);
       const data = await authenticationService.signIn(email, password);
       console.log(data);
       if (data?.isAuthenticated) {
         navigate("/home");
-      }
-      else setLoading(false);
+      } else setProcess(false);
     } catch (e) {
       console.log(e);
-      setLoading(false);
+      setProcess(false);
     }
   };
 
@@ -43,38 +44,57 @@ const Login = () => {
         {/* <AuthTabs /> */}
 
         <div className="text-center w-full mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome Back</h2>
-          <p className="text-slate-500 text-sm">Please enter your details to access your account.</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            Welcome Back
+          </h2>
+          <p className="text-slate-500 text-sm">
+            Please enter your details to access your account.
+          </p>
         </div>
 
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }} className="w-full max-w-sm flex flex-col gap-5">
-          <Input 
-            id="email" 
-            label="Email Address" 
-            type="email" 
-            icon={Mail} 
-            placeholder="name@university.edu" 
-            required 
-            onChange = {(e) => setEmail(e.target.value)}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+          className="w-full max-w-sm flex flex-col gap-5"
+        >
+          <Input
+            id="email"
+            label="Email Address"
+            type="email"
+            icon={Mail}
+            placeholder="name@university.edu"
+            required
+            onChange={(e) => setEmail(e.target.value)}
           />
 
-          <Input 
-            id="password" 
-            label="Password" 
-            type={showPassword ? 'text' : 'password'} 
-            icon={Lock} 
-            placeholder="••••••••" 
-            required 
-            className={showPassword === false ? "font-mono tracking-widest text-lg py-2.5" : ""}
+          <Input
+            id="password"
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            icon={Lock}
+            placeholder="••••••••"
+            required
+            className={
+              showPassword === false
+                ? "font-mono tracking-widest text-lg py-2.5"
+                : ""
+            }
             rightElement={
-              <button type="button" onClick={togglePasswordVisibility} className="text-slate-400 hover:text-slate-600 focus:outline-none p-1 cursor-pointer">
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="text-slate-400 hover:text-slate-600 focus:outline-none p-1 cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             }
-            onChange = {(e) => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <div className="flex items-center justify-between mt-1">
@@ -86,10 +106,16 @@ const Login = () => {
             </div>
           </div>
 
-          <Button type="submit" className="mt-4" disabled={loading} variant={loading ? "waiting" : "primary"}>
-            {loading ? "...Sign In" : "Sign In"}
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          {isProcessing ? (
+            <DisabledButton>
+              <Spinner />
+            </DisabledButton>
+          ) : (
+            <Button type="submit" className="mt-4">
+              Sign In
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </form>
       </div>
     </AuthLayout>
