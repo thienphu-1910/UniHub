@@ -68,9 +68,10 @@ const CheckinPage = () => {
               {open ? "Close Camera" : "Open Camera"}
             </Button>
           </div>
-          <div className="flex flex-row justify-center items-center h-full w-full bg-cyan-900/80 border-2 border-blue-900 rounded-lg">
+          <div className="flex flex-row justify-center items-center h-full w-full bg-blue-50/50 border-2 border-blue-700 rounded-lg">
             {open ? (
               <Scanner
+                scanDelay={300}
                 onScan={handleScan}
                 onError={(error) => console.error(error)}
                 classNames={{
@@ -86,7 +87,7 @@ const CheckinPage = () => {
                 // }}
               />
             ) : (
-              <ScanLine size={200} strokeWidth={0.5} color="#ffffff" />
+              <ScanLine size={200} strokeWidth={0.5} color="#4c07ed" />
             )}
           </div>
         </div>
