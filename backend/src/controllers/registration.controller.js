@@ -8,21 +8,17 @@ export const registrationController = {
         user: req.user,
       });
 
-      if (!result.success) {
-        return res.status(result.statusCode).json({
+      if (!result) {
+        return res.status(409).json({
           success: false,
-          code: result.code,
-          message: result.message,
+          code: "FULL_SLOTS",
+          message: "There is no available slot",
         });
       }
 
       return res.status(201).json({
         success: true,
-        message: "Registration created successfully",
-        data: {
-          registration: result.registration,
-          paymentUrl: result.paymentUrl,
-        },
+        message: "Registration created successfully",        
       });
     } catch (error) {
       console.log(error);

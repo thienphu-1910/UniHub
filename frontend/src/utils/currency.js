@@ -5,10 +5,10 @@ const formatToVND = (amount) => {
   }).format(amount);
 };
 
-console.log(formatToVND(1234567));
+//console.log(formatToVND(1234567));
 // Output: "1.234.567 ₫"
 
-console.log(formatToVND(1234567.89));
+//console.log(formatToVND(1234567.89));
 // Output: "1.234.567,89 ₫"
 
 export { formatToVND };
