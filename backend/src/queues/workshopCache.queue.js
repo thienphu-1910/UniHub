@@ -8,10 +8,8 @@ export const CACHE_WORKSHOP_FOR_REGISTRATION_JOB =
 const DEFAULT_CACHE_LEAD_MINUTES = 3;
 
 export const WORKSHOP_CACHE_LEAD_TIME_MS =
-  (Number.parseInt(
-    process.env.WORKSHOP_CACHE_LEAD_MINUTES,
-    10,
-  ) || DEFAULT_CACHE_LEAD_MINUTES) *
+  (Number.parseInt(process.env.WORKSHOP_CACHE_LEAD_MINUTES, 10) ||
+    DEFAULT_CACHE_LEAD_MINUTES) *
   60 *
   1000;
 
@@ -46,7 +44,7 @@ export const scheduleWorkshopCacheJob = async ({
     { workshopId },
     {
       delay: getWorkshopCacheDelayMs(registrationStartTime),
-      jobId: `workshop-cache:${workshopId}`,
+      jobId: `workshop-cache-${workshopId}`,
     },
   );
 };
