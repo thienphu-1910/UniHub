@@ -2,6 +2,8 @@ import { useState } from "react";
 import Button from "../component/common/Button";
 import { ScanLine, CircleCheck, CircleX } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
+import useOnlineStatus from "../hooks/useOnlineStatus";
+import { useCallback, useEffect } from "react";
 
 const CheckinStatus = ({ status, studentName, studentId }) => {
   return (
@@ -49,13 +51,36 @@ const CheckinStatus = ({ status, studentName, studentId }) => {
 const CheckinPage = () => {
   const [open, setOpen] = useState(false);
 
-  const handleScan = (detectedCodes) => {
-    console.log('Detected codes:', detectedCodes);
-    // detectedCodes is an array of IDetectedBarcode objects
-    detectedCodes.forEach(code => {
-      console.log(`Format: ${code.format}, Value: ${code.rawValue}`);
-    });
-  };
+  const isOnline = useOnlineStatus();
+  console.log(isOnline);
+
+  const [offlineQueue, setOfflineQueue] = useState([]);
+
+  const handleScan = useCallback(
+    (detectedCodes) => {
+      if (!detectedCodes || detectedCodes.length === 0) return;
+
+      const scannedValue = detectedCodes[0].rawValue;
+
+      if (isOnline) {
+        console.log(
+          `Online: Sending check-in for ${scannedValue} directly to database.`,
+        );        
+      } else {
+        console.log(`Offline: Queuing check-in for ${scannedValue}.`);
+        // Add the scanned code to our local queue to process later
+        setOfflineQueue((prevQueue) => [...prevQueue, scannedValue]);
+      }
+    },
+    [isOnline],
+  );
+  
+  useEffect(() => {
+    if (isOnline && offlineQueue.length > 0) {
+      console.log("Connection restored! Synchronizing queue...", offlineQueue);            
+    }
+
+  }, [isOnline, offlineQueue]);
 
   return (
     <div className="w-full h-full flex flex-col justify-between mb-4 items-baseline">
