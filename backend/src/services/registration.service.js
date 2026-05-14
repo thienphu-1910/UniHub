@@ -36,16 +36,6 @@ export const registrationService = {
     const registeredAt = new Date();
 
     const isPaid = redis.hget(workshopKey, "isPaid") === "true";
-    let qrCode = null;
-    let qrCodeUrl = null;
-    if (isPaid) {
-      qrCode = `MOCK_VIETQR:${registrationId}`;
-      qrCodeUrl = buildMockPaymentUrl({
-        registrationId,
-        workshopId,
-        studentId: user.studentId,
-      });
-    }
 
     const registrationStatus = isPaid
       ? registrationStatuses.PENDING
@@ -78,8 +68,6 @@ export const registrationService = {
         id: registrationId,
         userId: user.userId,
         workshopId: workshopId,
-        qrCode: qrCode,
-        qrCodeUrl: qrCodeUrl,
         registrationStatus,
         paymentStatus,
         idempotencyKey: randomUUID(),

@@ -8,8 +8,6 @@ export const registrationRepository = {
     workshopId,
     registrationStatus,
     paymentStatus,
-    qrCode,
-    qrCodeUrl,
     idempotencyKey,
     amount,
   }) => {
@@ -30,8 +28,8 @@ export const registrationRepository = {
             ${userId},
             ${workshopId},
             ${registrationStatus},
-            ${qrCode},
-            ${qrCodeUrl},
+            NULL,
+            NULL,
             NULL,
             NULL
           )
