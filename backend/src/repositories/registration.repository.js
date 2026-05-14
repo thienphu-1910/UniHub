@@ -1,56 +1,62 @@
 import sql from "../config/db.js";
+import { registrationStatus, paymentStatus } from "../enums/status.enum.js";
 
 export const registrationRepository = {
   createRegistration: async ({
     id,
     userId,
     workshopId,
-    status,
+    registrationStatus,
+    paymentStatus,
     qrCode,
     qrCodeUrl,
-    registeredAt,
+    idempotencyKey,
+    amount,
   }) => {
     try {
-      const registrations = await sql`
-        INSERT INTO registrations (
-          id,
-          user_id,
-          workshop_id,
-          status,
-          qr_code,
-          qr_code_url,
-          registered_at,
-          confirmed_at,
-          cancelled_at
-        ) VALUES (
-          ${id},
-          ${userId},
-          ${workshopId},
-          ${status},
-          ${qrCode},
-          ${qrCodeUrl},
-          ${registeredAt},
-          NULL,
-          NULL
+      await sql`
+        WITH new_registration AS (
+          INSERT INTO registrations (
+            id,
+            user_id,
+            workshop_id,
+            status,
+            qr_code,
+            qr_code_url,
+            confirmed_at,
+            cancelled_at
+          ) VALUES (
+            ${id},
+            ${userId},
+            ${workshopId},
+            ${registrationStatus},
+            ${qrCode},
+            ${qrCodeUrl},
+            NULL,
+            NULL
+          )
+          RETURNING id as "registration_id"
         )
-        RETURNING
-          id,
-          user_id AS "userId",
-          workshop_id AS "workshopId",
-          status,
-          qr_code AS "qrCode",
-          qr_code_url AS "qrCodeUrl",
-          registered_at AS "registeredAt",
-          confirmed_at AS "confirmedAt",
-          cancelled_at AS "cancelledAt"
+          INSERT INTO payments (
+            registration_id,
+            idempotency_key,
+            amount, 
+            status,
+            gateway,
+            gateway_txn_id,
+            gateway_response
+          ) 
+          SELECT registration_id, ${idempotencyKey}, ${amount}, ${paymentStatus}, NULL, NULL, NULL
+          FROM new_registration
       `;
 
-      return registrations[0] || null;
+      return true;
     } catch (error) {
       console.log(error);
-      return null;
+      return false;
     }
   },
+
   getAllWorkshopRegisteredStudent: async (workshopId) => {
     try {
       const response = sql`
