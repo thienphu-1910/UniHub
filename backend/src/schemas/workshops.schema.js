@@ -30,6 +30,8 @@ export const WorkshopSchema = z.object({
 
   startTime: z.coerce.date(),
   endTime: z.coerce.date(),
+  registrationStartTime: z.coerce.date().optional(),
+  registrationEndTime: z.coerce.date().optional(),
 
   speakerName: z.string().trim(),
   speakerBio: z.string().trim(),
@@ -40,4 +42,27 @@ export const WorkshopSchema = z.object({
 .refine((data) => data.endTime > data.startTime, {
   message: "Thời gian kết thúc phải sau thời gian bắt đầu",
   path: ["endTime"],
+}).superRefine((data, ctx) => {
+  if (
+    data.registrationStartTime &&
+    data.registrationEndTime &&
+    data.registrationEndTime <= data.registrationStartTime
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Registration end time must be after registration start time",
+      path: ["registrationEndTime"],
+    });
+  }
+
+  if (
+    data.registrationEndTime &&
+    data.registrationEndTime > data.startTime
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Registration end time must be before workshop start time",
+      path: ["registrationEndTime"],
+    });
+  }
 });

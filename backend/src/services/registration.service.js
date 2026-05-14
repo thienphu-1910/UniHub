@@ -5,6 +5,10 @@ import {
   buildMockPaymentUrl,
 } from "../config/registration.js";
 import { registrationRepository } from "../repositories/registration.repository.js";
+import {
+  getWorkshopSlotsKey,
+  workshopCacheService,
+} from "./workshopCache.service.js";
 
 const REGISTRATION_STATUS_PENDING = "PENDING";
 
@@ -28,7 +32,67 @@ export const registrationService = {
       };
     }
 
-    const slotKey = `workshop:${workshopId}:slots`;
+    const cachedWorkshop = await workshopCacheService.getCachedWorkshop(
+      workshopId,
+    );
+
+    if (!cachedWorkshop) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_REGISTRATION_NOT_READY",
+        message: "Workshop registration is not ready",
+      };
+    }
+
+    const now = Date.now();
+    const registrationStartMs = new Date(
+      cachedWorkshop.registrationStartTime,
+    ).getTime();
+    const registrationEndMs = new Date(
+      cachedWorkshop.registrationEndTime,
+    ).getTime();
+
+    if (Number.isNaN(registrationStartMs) || Number.isNaN(registrationEndMs)) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_REGISTRATION_NOT_READY",
+        message: "Workshop registration window is not ready",
+      };
+    }
+
+    if (now < registrationStartMs) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_REGISTRATION_NOT_OPEN",
+        message: "Workshop registration is not open yet",
+      };
+    }
+
+    if (now > registrationEndMs) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_REGISTRATION_CLOSED",
+        message: "Workshop registration is closed",
+      };
+    }
+
+    const hasCachedSlots = await workshopCacheService.hasCachedSlots(
+      workshopId,
+    );
+    if (!hasCachedSlots) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_SLOTS_NOT_READY",
+        message: "Workshop slots are not ready",
+      };
+    }
+
+    const slotKey = getWorkshopSlotsKey(workshopId);
     const holdKey = `slot:hold:${workshopId}:${user.studentId}`;
     const registrationId = randomUUID();
     const registeredAt = new Date();

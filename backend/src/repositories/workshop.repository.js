@@ -11,6 +11,8 @@ export const workshopRepository = {
     roomDiagram,
     startTime,
     endTime,
+    registrationStartTime,
+    registrationEndTime,
     capacity,
     availableSlots,
     price,
@@ -18,9 +20,9 @@ export const workshopRepository = {
   }) => {
     try {
       const response = await sql`
-      INSERT INTO workshops (title, description, ai_summary, summary_status, speaker, room, room_diagram, start_time, end_time, capacity, available_slots, price, created_by)
-      VALUES (${title}, ${description}, ${aiSummary}, ${summaryStatus}, ${speaker}, ${room}, ${roomDiagram}, ${startTime}, ${endTime}, ${capacity}, ${availableSlots}, ${price}, ${createdBy})
-      RETURNING id AS "workshopId", title, description, ai_summary AS "aiSummary", summary_status AS "summaryStatus", speaker, room, room_diagram AS "roomDiagram", start_time AS "startTime", end_time AS "endTime", capacity, available_slots AS "availableSlots", price, created_by AS "createdBy"
+      INSERT INTO workshops (title, description, ai_summary, summary_status, speaker, room, room_diagram, start_time, end_time, registration_start_time, registration_end_time, capacity, available_slots, price, created_by)
+      VALUES (${title}, ${description}, ${aiSummary}, ${summaryStatus}, ${speaker}, ${room}, ${roomDiagram}, ${startTime}, ${endTime}, ${registrationStartTime}, ${registrationEndTime}, ${capacity}, ${availableSlots}, ${price}, ${createdBy})
+      RETURNING id, id AS "workshopId", title, description, ai_summary AS "aiSummary", summary_status AS "summaryStatus", speaker, room, room_diagram AS "roomDiagram", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", capacity, available_slots AS "availableSlots", price, created_by AS "createdBy"
     `;
       return response ? response[0] : null;
     } catch (e) {
@@ -32,7 +34,7 @@ export const workshopRepository = {
   getWorkshopList: async (page = 1, limit = 10) => {
     try {
       const response = await sql`
-        SELECT id, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", room
+        SELECT id, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", room
         FROM workshops
         WHERE start_time >= CURRENT_TIMESTAMP
       `;
@@ -58,7 +60,7 @@ export const workshopRepository = {
       const id = workshopId ?? ""
 
       const response = await sql`
-        SELECT id, description, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", room, ai_summary AS "aiSummary"
+        SELECT id, description, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", room, ai_summary AS "aiSummary"
         FROM workshops
         WHERE id = ${id}
       `;
@@ -67,5 +69,19 @@ export const workshopRepository = {
     } catch (e) {
       throw e;
     }
-  }
+  },
+
+  getWorkshopForCache: async (workshopId) => {
+    try {
+      const response = await sql`
+        SELECT id, description, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", room, room_diagram AS "roomDiagram", ai_summary AS "aiSummary", summary_status AS "summaryStatus", created_by AS "createdBy"
+        FROM workshops
+        WHERE id = ${workshopId}
+      `;
+
+      return response ? response[0] : null;
+    } catch (e) {
+      throw e;
+    }
+  },
 };
