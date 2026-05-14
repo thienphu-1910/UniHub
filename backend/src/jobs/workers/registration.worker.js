@@ -1,4 +1,4 @@
-import { redisConnection } from "../../config/queue";
+import { redisConnection } from "../../config/queue.js";
 import { Worker } from "bullmq";
 import { registrationRepository } from "../../repositories/registration.repository.js";
 

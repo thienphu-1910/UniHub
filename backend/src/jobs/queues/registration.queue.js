@@ -1,4 +1,4 @@
-import { redisConnection } from "../../config/queue"
+import { redisConnection } from "../../config/queue.js"
 import { Queue } from "bullmq"
 
 const registrationQueue = new Queue('registration', {

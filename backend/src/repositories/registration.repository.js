@@ -1,5 +1,5 @@
 import sql from "../config/db.js";
-import { registrationStatus, paymentStatus } from "../enums/status.enum.js";
+import { registrationStatuses, paymentStatuses } from "../enums/status.enum.js";
 
 export const registrationRepository = {
   createRegistration: async ({
