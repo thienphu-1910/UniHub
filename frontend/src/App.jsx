@@ -18,15 +18,44 @@ import WorkshopsPage from "./pages/WorkshopsPage";
 import { userStore } from "./store/useAuthStore";
 import WorkshopDetailPage from "./pages/WorkshopDetailPage";
 import CheckinPage from "./pages/CheckinPage";
+import useOnlineStatus from "./hooks/useOnlineStatus";
+import { getAllItems, saveItem, clearItems } from "./lib/indexedDB";
+import { checkinService } from "./services/checkinService";
+import { useRef } from "react";
 
 function App() {
-  const user = userStore((state) => state.user);
+  const user = userStore((state) => state.user);  
+
+  const isOnline = useOnlineStatus();  
+  const isIgnore = useRef(true);
+  const isStaff = user.role === userRoles.STAFF;
+
+  useEffect(() => {
+    const syncCheckinData = async () => {
+      const data = await getAllItems();   
+      if (data.length > 0) {
+        try {
+          await checkinService.syncCheckinData(data);          
+          await clearItems();
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    }
+
+    if (isStaff && isOnline && !isIgnore.current) {
+      syncCheckinData();
+    }
+
+    return () => {
+      isIgnore.current = false;
+    }
+  }, [isOnline, isStaff])
 
   useEffect(() => {
     const handleLogout = (event) => {
       console.warn(event.detail.message);
 
-      //authenticationService.logout();
       window.location.href = "/login";
     };
 
