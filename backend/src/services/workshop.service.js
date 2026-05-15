@@ -2,6 +2,7 @@ import { userRepository } from "../repositories/user.repository.js";
 import { workshopRepository } from "../repositories/workshop.repository.js";
 import { scheduleWorkshopCacheJob } from "../queues/workshopCache.queue.js";
 import { uploadToCloudinary } from "../utils/imageUpload.js";
+import redis from "../config/redis.js";
 
 const DEFAULT_REGISTRATION_OFFSET_DAYS = 3;
 
@@ -92,6 +93,21 @@ export const workshopService = {
 
   getWorkshopList: async (page = 1, limit = 10) => {
     try {
+      const setKey = "workshop:index";
+      const exists = await redis.exists(setKey);
+      const count = await redis.sCard(setKey);
+
+      if (exist === 1 && count > 0) {
+        const pipeline = redis.pipeline();
+        const ids = pipeline.sMembers(setKey);
+
+        ids.forEach(id => pipeline.hGetAll(`workshop:${id}`));
+
+        const result = await pipeline.exec();
+
+        return result.map(([err, val]) => val).filter(Boolean);
+      }
+
       const response = await workshopRepository.getWorkshopList(page, limit);
       return response;
     } catch (e) {
@@ -102,6 +118,19 @@ export const workshopService = {
 
   getWorkshopDetail: async (workshopId) => {
     try {
+      const key = `workshop:${workshopId}`;
+      const slotKey = `workshop:${workshopId}:slots`;
+      const exist = await redis.exists(key);
+      if (exist) {
+        const workshop = await redis.hGet(key);
+        const availableSlots = await redis.get(slotKey);
+        workshop.price = Number.parseFloat(workshop.price);
+        return {
+          ...workshop,
+          availableSlots,
+        };
+      }
+
       const response = await workshopRepository.getWorkshopDetail(workshopId);
       return response;
     } catch (e) {

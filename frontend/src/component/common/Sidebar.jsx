@@ -43,24 +43,29 @@ const Sidebar = () => {
     <div className="w-64 bg-[#0a2540] text-slate-300 flex flex-col h-screen fixed top-0 left-0 shadow-xl z-20">
       {/* Logo Area */}
       <div className="p-6 flex items-center space-x-3 mb-4">
-        <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md">
+        {/* <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md">
           <span className="text-lg font-bold">UH</span>
-        </div>
+        </div> */}
         <div>
-          <h1 className="text-xl font-bold text-white leading-tight tracking-wide">UniHub</h1>
-          <p className="text-[10px] text-blue-200 uppercase tracking-wider font-medium">Workshop Management</p>
+          <h1 className="text-xl font-bold text-white leading-tight tracking-wide">
+            UniHub
+          </h1>
+          <p className="text-[10px] text-blue-200 uppercase tracking-wider font-medium">
+            Workshop Management
+          </p>
         </div>
       </div>
 
       {/* Navigation Menu */}
       <div className="flex-1 px-4 overflow-y-auto">
         <ul className="space-y-1.5">
-          {role !== userRoles.STAFF ? menuItems.map((item) => (
-            <SidebarItem item={item} />
-          )) : staffMenuItems.map((item) => (
-            <SidebarItem item={item} />
-          ))
-        }
+          {role !== userRoles.STAFF
+            ? menuItems.map((item) => (
+                <SidebarItem item={item} key={item.name} />
+              ))
+            : staffMenuItems.map((item) => (
+                <SidebarItem item={item} key={item.name} />
+              ))}
         </ul>
       </div>
 
@@ -72,8 +77,8 @@ const Sidebar = () => {
             className={({ isActive }) =>
               `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                 isActive
-                  ? 'bg-[#163a5f] text-white shadow-inner font-semibold'
-                  : 'hover:bg-[#163a5f]/50 hover:text-white'
+                  ? "bg-[#163a5f] text-white shadow-inner font-semibold"
+                  : "hover:bg-[#163a5f]/50 hover:text-white"
               }`
             }
           >

@@ -11,6 +11,8 @@ import {
 } from "./workshopCache.service.js";
 
 const REGISTRATION_STATUS_PENDING = "PENDING";
+import { addRegistrationJob } from "../jobs/queues/registration.queue.js";
+import { registrationStatuses, paymentStatuses } from "../enums/status.enum.js";
 
 export const registrationService = {
   createRegistration: async ({ workshopId, user }) => {
@@ -94,14 +96,19 @@ export const registrationService = {
 
     const slotKey = getWorkshopSlotsKey(workshopId);
     const holdKey = `slot:hold:${workshopId}:${user.studentId}`;
+    const workshopKey = `workshop:${workshopId}`;
+
     const registrationId = randomUUID();
     const registeredAt = new Date();
-    const qrCode = `MOCK_VIETQR:${registrationId}`;
-    const qrCodeUrl = buildMockPaymentUrl({
-      registrationId,
-      workshopId,
-      studentId: user.studentId,
-    });
+
+    const isPaid = redis.hget(workshopKey, "isPaid") === "true";
+
+    const registrationStatus = isPaid
+      ? registrationStatuses.PENDING
+      : registrationStatuses.CONFIRMED;
+    const paymentStatus = isPaid
+      ? paymentStatuses.PENDING
+      : paymentStatuses.SUCCESS;
 
     let slotReserved = false;
 
@@ -123,25 +130,17 @@ export const registrationService = {
 
       await redis.setEx(holdKey, REGISTRATION_HOLD_TTL_SECONDS, registrationId);
 
-      const registration = await registrationRepository.createRegistration({
+      await addRegistrationJob({
         id: registrationId,
         userId: user.userId,
-        workshopId,
-        status: REGISTRATION_STATUS_PENDING,
-        qrCode,
-        qrCodeUrl,
-        registeredAt,
+        workshopId: workshopId,
+        registrationStatus,
+        paymentStatus,
+        idempotencyKey: randomUUID(),
+        amount: Number.parseFloat(redis.hget(workshopKey, "price")),
       });
 
-      if (!registration) {
-        throw new Error("Failed to persist registration");
-      }
-
-      return {
-        success: true,
-        registration,
-        paymentUrl: qrCodeUrl,
-      };
+      return true;
     } catch (error) {
       if (slotReserved) {
         try {
