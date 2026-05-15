@@ -1,19 +1,32 @@
 import { api } from "./api";
 
 export const checkinService = {
-  checkin: async (qrCodeRawValue) => {
+  checkin: async (staffId, registrationId, workshopId) => {
     try {
-      console.log(`Sending ${qrCodeRawValue}`);
+      const response = await api.post(`/api/checkin/${workshopId}`, {
+        staffId,
+        registrationId,
+      });
+
+      return response?.data?.success ?? false;
     } catch (e) {
       console.log(e);
+      return false;
     }
   },
 
-  syncCheckinData: async (data) => {
+  syncCheckinData: async (staffId, checkinData) => {
     try {
-      console.log(data);
+      //console.log(data);
+      const response = await api.post("/api/checkin", {
+        staffId,
+        checkinData,
+      });
+
+      return response?.data?.success ?? false;
     } catch (e) {
       console.log(e);
+      return false;
     }
-  }
-}
+  },
+};

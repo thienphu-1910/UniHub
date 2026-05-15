@@ -19,7 +19,7 @@ import { userStore } from "./store/useAuthStore";
 import WorkshopDetailPage from "./pages/WorkshopDetailPage";
 import CheckinPage from "./pages/CheckinPage";
 import useOnlineStatus from "./hooks/useOnlineStatus";
-import { getAllItems, saveItem, clearItems } from "./lib/indexedDB";
+import { getAllItems, clearItems } from "./lib/indexedDB";
 import { checkinService } from "./services/checkinService";
 import { useRef } from "react";
 
@@ -27,7 +27,7 @@ function App() {
   const user = userStore((state) => state.user);  
 
   const isOnline = useOnlineStatus();  
-  const isIgnore = useRef(true);
+  const prevIsOnline = useRef(null);
   const isStaff = user.role === userRoles.STAFF;
 
   useEffect(() => {
@@ -35,22 +35,24 @@ function App() {
       const data = await getAllItems();   
       if (data.length > 0) {
         try {
-          await checkinService.syncCheckinData(data);          
-          await clearItems();
+          const isSynced = await checkinService.syncCheckinData(user.userId, data);          
+          if (isSynced) {
+            await clearItems();
+          }
         } catch (e) {
           console.log(e);
         }
       }
     }
 
-    if (isStaff && isOnline && !isIgnore.current) {
+    const justCameOnline = isOnline && prevIsOnline.current === false;
+    prevIsOnline.current = isOnline;
+
+    if (isStaff && justCameOnline) {
       syncCheckinData();
     }
 
-    return () => {
-      isIgnore.current = false;
-    }
-  }, [isOnline, isStaff])
+  }, [isOnline, isStaff, user])
 
   useEffect(() => {
     const handleLogout = (event) => {

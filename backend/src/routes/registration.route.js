@@ -19,7 +19,20 @@ registrationRoute.get(
   apikeyMiddleware,
   auth,
   checkRole([userRoles.ORGANIZER]),
-  registrationController.getAllWorkshopRegisteredStudent,
+  registrationController.getWorkshopRegisteredStudents,
 );
 
+registrationRoute.get(
+  "/registration/:workshopId/status",
+  auth,
+  checkRole([userRoles.STUDENT]),
+  registrationController.getRegistrationStatus
+);
+
+registrationRoute.get(
+  "registrations/:workshopId/confirmation",
+  auth, 
+  checkRole([userRoles.STAFF]),
+  registrationController.getWorkshopConfirmedRegistration
+)
 export { registrationRoute };
