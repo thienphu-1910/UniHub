@@ -106,7 +106,7 @@ export const workshopService = {
         const ids = await redis.sMembers(setKey);
         const multi = redis.multi();
 
-        ids.forEach((id) => { multi.hGetAll(`workshop:${id}`) });
+        ids.forEach((id) => { multi.hGetAll(`workshop-${id}`) });
 
         const result = await multi.exec();
 

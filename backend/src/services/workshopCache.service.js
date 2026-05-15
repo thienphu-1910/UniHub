@@ -2,10 +2,10 @@ import redis from "../config/redis.js";
 
 export const WORKSHOP_CACHE_INDEX_KEY = "workshop:index";
 
-export const getWorkshopInfoKey = (workshopId) => `workshop:${workshopId}:info`;
+export const getWorkshopInfoKey = (workshopId) => `workshop-${workshopId}-info`;
 
 export const getWorkshopSlotsKey = (workshopId) =>
-  `workshop:${workshopId}:slots`;
+  `workshop-${workshopId}-slots`;
 
 const toIsoString = (value) => {
   if (!value) return "";
