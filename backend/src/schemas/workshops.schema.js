@@ -7,7 +7,10 @@ const ImageFileSchema = z
   .refine((file) => file !== null, "Vui lòng chọn ảnh")
   .refine((file) => file?.size <= MAX_FILE_SIZE, "Kích thước ảnh tối đa 5MB")
   .refine(
-    (file) => ["image/jpeg", "image/png", "image/webp, image/jpeg"].includes(file?.mimetype),
+    (file) =>
+      ["image/jpeg", "image/png", "image/webp, image/jpeg"].includes(
+        file?.mimetype,
+      ),
     "Chỉ chấp nhận .jpg, .png, .webp",
   );
 
@@ -20,24 +23,27 @@ const PdfFileSchema = z
     "Chỉ chấp nhận định dạng .pdf",
   );
 
+export const WorkshopSchema = z
+  .object({
+    title: z.string().trim().min(1, "Title không được để trống"),
+    description: z.string().trim(),
+    capacity: z.coerce.number().int().positive(),
+    price: z.coerce.number().min(0),
+    room: z.string().trim().min(1),
 
-export const WorkshopSchema = z.object({
-  title: z.string().trim().min(1, "Title không được để trống"),
-  description: z.string().trim(),
-  capacity: z.coerce.number().int().positive(),
-  price: z.coerce.number().min(0),
-  room: z.string().trim().min(1),
+    startTime: z.coerce.date(),
+    endTime: z.coerce.date(),
 
-  startTime: z.coerce.date(),
-  endTime: z.coerce.date(),
+    registrationStartTime: z.coerce.date().optional(),
+    registrationEndTime: z.coerce.date().optional(),
 
-  speakerName: z.string().trim(),
-  speakerBio: z.string().trim(),
-  speakerAvatar: ImageFileSchema.nullable(),
+    speakerName: z.string().trim(),
+    speakerBio: z.string().trim(),
+    speakerAvatar: ImageFileSchema.nullable(),
 
-  pdfFile: PdfFileSchema.nullable(),
-})
-.refine((data) => data.endTime > data.startTime, {
-  message: "Thời gian kết thúc phải sau thời gian bắt đầu",
-  path: ["endTime"],
-});
+    pdfFile: PdfFileSchema.nullable(),
+  })
+  .refine((data) => data.endTime > data.startTime, {
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
+    path: ["endTime"],
+  });
