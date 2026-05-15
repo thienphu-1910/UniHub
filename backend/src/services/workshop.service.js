@@ -102,15 +102,15 @@ export const workshopService = {
       const exists = await redis.exists(setKey);
       const count = await redis.sCard(setKey);
 
-      if (exist === 1 && count > 0) {
-        const pipeline = redis.pipeline();
-        const ids = pipeline.sMembers(setKey);
+      if (exists === 1 && count > 0) {
+        const ids = await redis.sMembers(setKey);
+        const multi = redis.multi();
 
-        ids.forEach((id) => pipeline.hGetAll(`workshop:${id}`));
+        ids.forEach((id) => { multi.hGetAll(`workshop:${id}`) });
 
-        const result = await pipeline.exec();
+        const result = await multi.exec();
 
-        return result.map(([err, val]) => val).filter(Boolean);
+        return result.filter(Boolean);
       }
 
       const response = await workshopRepository.getWorkshopList(page, limit);
