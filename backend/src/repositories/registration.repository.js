@@ -68,4 +68,18 @@ export const registrationRepository = {
       throw e;
     }
   },
+
+  findWorkshopId: async (registrationId) => {
+    try {
+      const response = sql`
+        SELECT workshop_id AS "workshopId"
+        FROM registrations
+        WHERE id = ${registrationId}
+      `;
+
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  }
 };
