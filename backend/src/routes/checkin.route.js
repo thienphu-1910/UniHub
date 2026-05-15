@@ -7,14 +7,14 @@ import { apikeyMiddleware} from "../middleware/apikey.middleware.js"
 
 const checkinRoute = express.Router();
 
-checkRole.post(
+checkinRoute.post(
   "/checkin/:workshopId",
   auth,
   checkRole([userRoles.STAFF]),
   checkinRepository.checkin,
 );
 
-checkRole.post(
+checkinRoute.post(
   "/checkin",
   apikeyMiddleware,
   auth,
