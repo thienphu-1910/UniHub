@@ -34,8 +34,8 @@ export const WorkshopSchema = z
     startTime: z.coerce.date(),
     endTime: z.coerce.date(),
 
-    registrationStartTime: z.coerce.date().optional(),
-    registrationEndTime: z.coerce.date().optional(),
+    registrationStartTime: z.coerce.date(),
+    registrationEndTime: z.coerce.date(),
 
     speakerName: z.string().trim(),
     speakerBio: z.string().trim(),

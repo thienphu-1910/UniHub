@@ -3,7 +3,13 @@ import FormContainer from "./FormContainer";
 import { Upload, FileText, X } from "lucide-react";
 import { useRef } from "react";
 
-const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
+const WorkshopDetailsForm = ({
+  register,
+  watch,
+  setValue,
+  errors,
+  getValues,
+}) => {
   const fileInputRef = useRef(null);
 
   const pdfFile = watch("pdfFile");
@@ -25,7 +31,7 @@ const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
           Field with * is required
         </p3>
       </div>
-      <div className="w-full flex flex-row gap-5 justify-center items-start">
+      <div className="w-full grid grid-cols-2 gap-5 justify-center items-start">
         <div className="w-full flex flex-col gap-3">
           {/* Workshop Title - Required */}
           <div className="flex flex-col w-full">
@@ -125,45 +131,121 @@ const WorkshopDetailsForm = ({ register, watch, setValue, errors }) => {
             )}
           </div>
 
-          {/* Start Time - Required */}
-          <div className="flex flex-col w-full">
-            <FormInput
-              label="Start Time"
-              required={true}
-              className={`w-full border rounded-md py-1 px-2 ${
-                errors.startTime
-                  ? "border-red-500"
-                  : "border-gray-500 focus:border-black"
-              }`}
-              type="datetime-local"
-              {...register("startTime", { required: "Start Time is required" })}
-            />
-            {errors.startTime && (
-              <span className="text-red-500 text-xs mt-1">
-                {errors.startTime.message}
-              </span>
-            )}
-          </div>
-          {/* End Time - Required */}
-          <div className="flex flex-col w-full">
-            <FormInput
-              label="End Time"
-              required={true}
-              className={`w-full border rounded-md py-1 px-2 ${
-                errors.endTime
-                  ? "border-red-500"
-                  : "border-gray-500 focus:border-black"
-              }`}
-              type="datetime-local"
-              {...register("endTime", { required: "End Time is required" })}
-            />
-            {errors.endTime && (
-              <span className="text-red-500 text-xs mt-1">
-                {errors.endTime.message}
-              </span>
-            )}
+          <div className="flex flex-row gap-5 w-full">
+            {/* Start Time - Required */}
+            <div className="flex flex-col flex-1 min-w-0">
+              <FormInput
+                label="Start Time"
+                required={true}
+                type="datetime-local"
+                className={`w-full border rounded-md py-1 px-2 ${errors.startTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
+                {...register("startTime", {
+                  required: "Start Time is required",
+                  validate: (value) => {
+                    const endTime = getValues("endTime");
+                    const regEndTime = getValues("regEndTime");
+
+                    if (regEndTime && new Date(value) <= new Date(regEndTime)) {
+                      return "Start Time must be after Registration End Time";
+                    }
+                    if (endTime && new Date(value) >= new Date(endTime)) {
+                      return "Start Time must be before End Time";
+                    }
+                    return true;
+                  },
+                })}
+              />
+              {/* Sửa lại lỗi copy-paste từ errors.startTime cũ của bạn ở dưới đây */}
+              {errors.startTime && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.startTime.message}
+                </span>
+              )}
+            </div>
+            {/* End Time - Required */}
+            <div className="flex flex-col flex-1 min-w-0">
+              <FormInput
+                label="End Time"
+                required={true}
+                type="datetime-local"
+                className={`w-full border rounded-md py-1 px-2 ${errors.endTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
+                {...register("endTime", {
+                  required: "End Time is required",
+                  validate: (value) => {
+                    const startTime = getValues("startTime");
+                    if (startTime && new Date(value) <= new Date(startTime)) {
+                      return "End Time must be after Start Time";
+                    }
+                    return true;
+                  },
+                })}
+              />
+              {errors.endTime && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.endTime.message}
+                </span>
+              )}
+            </div>
           </div>
 
+          <div className="flex flex-row gap-5 w-full">
+            <div className="flex flex-col flex-1 min-w-0">
+              <FormInput
+                label="Registration Start Time"
+                required={true}
+                type="datetime-local"
+                className={`w-full border rounded-md py-1 px-2 ${errors.regStartTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
+                {...register("regStartTime", {
+                  required: "Registration Start Time is required",
+                  validate: (value) => {
+                    const regEndTime = getValues("regEndTime");
+                    if (regEndTime && new Date(value) >= new Date(regEndTime)) {
+                      return "Registration Start Time must be before Registration End Time";
+                    }
+                    return true;
+                  },
+                })}
+              />
+              {errors.regStartTime && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.regStartTime.message}
+                </span>
+              )}
+            </div>
+
+            {/* 2. Registration End Time */}
+            <div className="flex flex-col flex-1 min-w-0">
+              <FormInput
+                label="Registration End Time"
+                required={true}
+                type="datetime-local"
+                className={`w-full border rounded-md py-1 px-2 ${errors.regEndTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
+                {...register("regEndTime", {
+                  required: "Registration End Time is required",
+                  validate: (value) => {
+                    const startTime = getValues("startTime");
+                    const regStartTime = getValues("regStartTime");
+
+                    if (
+                      regStartTime &&
+                      new Date(value) <= new Date(regStartTime)
+                    ) {
+                      return "Registration End Time must be after Registration Start Time";
+                    }
+                    if (startTime && new Date(value) >= new Date(startTime)) {
+                      return "Registration End Time must be before Start Time";
+                    }
+                    return true;
+                  },
+                })}
+              />
+              {errors.regEndTime && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.regEndTime.message}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="flex flex-col gap-2 items-start justify-center w-full">
             <h2 className="font-bold text-base">PDF File Upload</h2>
             <button

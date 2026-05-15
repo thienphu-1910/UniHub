@@ -5,7 +5,22 @@ import SpeakerForm from "./SpeakerForm";
 import { workshopService } from "../../services/workshopService";
 
 const WorkshopForm = () => {
-  const { register, handleSubmit, watch, setValue , formState: { errors }, reset} = useForm();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors },
+    reset,
+  } = useForm({
+    defaultValues: {
+      startTime: "",
+      endTime: "",
+      regStartTime: "",
+      regEndTime: "",
+    },
+  });
 
   const onSubmit = async (data, e) => {
     e.preventDefault();
@@ -19,6 +34,8 @@ const WorkshopForm = () => {
     formData.append("room", data.room || "");
     formData.append("startTime", data.startTime);
     formData.append("endTime", data.endTime);
+    formData.append("registrationStartTime", data.regStartTime);
+    formData.append("registrationEndTime", data.regEndTime);
 
     formData.append("speakerName", data.speakerName || "");
     formData.append("speakerBio", data.speakerBio || "");
@@ -52,6 +69,7 @@ const WorkshopForm = () => {
           watch={watch}
           setValue={setValue}
           errors={errors}
+          getValues={getValues}
         />
         <SpeakerForm register={register} setValue={setValue} errors={errors} />
         <Button type="submit" className="w-full mt-5 active:scale-98">
