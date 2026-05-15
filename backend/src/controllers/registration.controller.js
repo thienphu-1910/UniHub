@@ -30,11 +30,11 @@ export const registrationController = {
     }
   },
 
-  getAllWorkshopRegisteredStudent: async (req, res) => {
+  getWorkshopRegisteredStudents: async (req, res) => {
     const workshopId = req.params.workshopId;
     try {
       const response =
-        await registrationService.getAllWorkshopRegisteredStudent(workshopId);
+        await registrationService.getWorkshopRegisteredStudents(workshopId);
       return res.status(200).json({
         success: true,
         message: "Get all registered students successfully",
@@ -89,4 +89,23 @@ export const registrationController = {
       })
     }
   },
+
+  getWorkshopConfirmedRegistration: async (req, res) => {
+    const workshopId = req.params.workshopId;
+    try {
+      const registrations = registrationService.getWorkshopConfirmedRegistration(workshopId);
+      return res.status(200).json({
+        success: true,
+        message: "Get registrations successfully",
+        data: {
+          registrations,
+        }
+      })
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        message: "Database Unavailable",
+      });
+    }
+  }
 };

@@ -88,10 +88,10 @@ export const registrationService = {
       throw error;
     }
   },
-  getAllWorkshopRegisteredStudent: async (workshopId) => {
+  getWorkshopRegisteredStudents: async (workshopId) => {
     try {
       const response =
-        await registrationRepository.getAllWorkshopRegisteredStudent(
+        await registrationRepository.getWorkshopRegisteredStudents(
           workshopId,
         );
       return response;
@@ -107,6 +107,15 @@ export const registrationService = {
         userId,
       );
       return status;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getWorkshopConfirmedRegistration: async (workshopId) => {
+    try {
+      const registrations = registrationRepository.getWorkshopConfirmedRegistrations(workshopId);
+      return registrations;
     } catch (e) {
       throw e;
     }

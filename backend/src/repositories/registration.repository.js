@@ -57,7 +57,7 @@ export const registrationRepository = {
     }
   },
 
-  getAllWorkshopRegisteredStudent: async (workshopId) => {
+  getWorkshopRegisteredStudents: async (workshopId) => {
     try {
       const response = sql`
       SELECT u.id AS "userId", u.full_name AS "fullName", u.email AS "email", r.registered_at AS "registeredAt", r.status
@@ -94,6 +94,20 @@ export const registrationRepository = {
       `;
 
       return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getWorkshopConfirmedRegistrations: async (workshopId) => {
+    try {
+      const registrations = await sql`
+        SELECT r.id AS "registrationId", u.id AS "userId", u.full_name AS "fullName", u.email AS "email", r.registered_at AS "registeredAt"
+        FROM registrations AS r JOIN users AS u ON r.user_id = u.id
+        WHERE r.workshop_id = ${workshopId} AND r.status IN ("confirmed")
+      `;
+
+      return registrations;
     } catch (e) {
       throw e;
     }
