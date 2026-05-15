@@ -30,7 +30,7 @@ registrationRoute.get(
 );
 
 registrationRoute.get(
-  "registrations/:workshopId/confirmation",
+  "/registrations/:workshopId/confirmation",
   auth, 
   checkRole([userRoles.STAFF]),
   registrationController.getWorkshopConfirmedRegistration

@@ -6,7 +6,7 @@ export const checkinService = {
     try {
       const regWorkshopId =
         await registrationRepository.findWorkshopId(registrationId);
-      if (regWorkshopId !== workshopId) return {
+      if (regWorkshopId?.workshopId !== workshopId) return {
         success: false,
         code: "REGISTRATION_NOT_FOUND",
         message: "Can not found registration"

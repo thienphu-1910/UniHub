@@ -1,11 +1,14 @@
 import { api } from "./api";
 
 export const checkinService = {
-  checkin: async (staffId, registrationId, workshopId) => {
+  checkin: async (registrationId, workshopId) => {
     try {
       const response = await api.post(`/api/checkin/${workshopId}`, {
-        staffId,
         registrationId,
+      }, {
+        headers: {
+          "x-api-key": import.meta.env.VITE_API_KEY,
+        },
       });
 
       return response?.data?.success ?? false;
@@ -15,12 +18,15 @@ export const checkinService = {
     }
   },
 
-  syncCheckinData: async (staffId, checkinData) => {
+  syncCheckinData: async (checkinData) => {
     try {
       //console.log(data);
       const response = await api.post("/api/checkin", {
-        staffId,
         checkinData,
+      }, {
+        headers: {
+          "x-api-key": import.meta.env.VITE_API_KEY,
+        },
       });
 
       return response?.data?.success ?? false;
