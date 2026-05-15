@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 import { authRoute } from "./routes/auth.route.js";
 import { registrationRoute } from "./routes/registration.route.js";
 import { workshopRoute } from "./routes/workshop.route.js";
+import "./workers/workshopCache.worker.js";
 
 app.use("/api", authRoute);
 app.use("/api", registrationRoute);

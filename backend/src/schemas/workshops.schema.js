@@ -40,10 +40,34 @@ export const WorkshopSchema = z
     speakerName: z.string().trim(),
     speakerBio: z.string().trim(),
     speakerAvatar: ImageFileSchema.nullable(),
-
     pdfFile: PdfFileSchema.nullable(),
   })
   .refine((data) => data.endTime > data.startTime, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["endTime"],
+  })
+  .refine((data) => data.endTime > data.startTime, {
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
+    path: ["endTime"],
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.registrationStartTime &&
+      data.registrationEndTime &&
+      data.registrationEndTime <= data.registrationStartTime
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Registration end time must be after registration start time",
+        path: ["registrationEndTime"],
+      });
+    }
+
+    if (data.registrationEndTime && data.registrationEndTime > data.startTime) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Registration end time must be before workshop start time",
+        path: ["registrationEndTime"],
+      });
+    }
   });
