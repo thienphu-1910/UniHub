@@ -2,6 +2,7 @@ import { userRepository } from "../repositories/user.repository.js";
 import { workshopRepository } from "../repositories/workshop.repository.js";
 import { scheduleWorkshopCacheJob } from "../queues/workshopCache.queue.js";
 import { uploadToCloudinary } from "../utils/imageUpload.js";
+import { summarizeWorkshopPdf } from "./aiSummary.service.js";
 import redis from "../config/redis.js";
 
 const DEFAULT_REGISTRATION_OFFSET_DAYS = 3;
@@ -51,11 +52,15 @@ export const workshopService = {
         speakerAvatarUrl = uploadResult.secure_url;
       }
 
+      const pdfSummaryResult = await summarizeWorkshopPdf(payload.pdfFile);
+      const aiSummary = pdfSummaryResult.summary || "";
+      const summaryStatus = pdfSummaryResult.status || "failed";
+
       const workshopPayload = {
         title: payload.title || "",
         description: payload.description || "",
-        aiSummary: payload.aiSummary || "",
-        summaryStatus: payload.summaryStatus || "none",
+        aiSummary,
+        summaryStatus,
         speaker: {
           name: payload.speakerName || "",
           bio: payload.speakerBio || "",
@@ -101,7 +106,7 @@ export const workshopService = {
         const pipeline = redis.pipeline();
         const ids = pipeline.sMembers(setKey);
 
-        ids.forEach(id => pipeline.hGetAll(`workshop:${id}`));
+        ids.forEach((id) => pipeline.hGetAll(`workshop:${id}`));
 
         const result = await pipeline.exec();
 

@@ -48,7 +48,7 @@ export const workshopRepository = {
         offset,
         totalPage: totalPage,
         limit,
-      }
+      };
     } catch (e) {
       console.log(e);
       throw e;
@@ -57,7 +57,7 @@ export const workshopRepository = {
 
   getWorkshopDetail: async (workshopId) => {
     try {
-      const id = workshopId ?? ""
+      const id = workshopId ?? "";
 
       const response = await sql`
         SELECT id, description, title, speaker, price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", room, ai_summary AS "aiSummary"
