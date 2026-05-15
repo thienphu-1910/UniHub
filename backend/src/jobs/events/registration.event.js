@@ -5,12 +5,27 @@ const registrationEvent = new QueueEvents('registration', {
   connection: redisConnection,
 });
 
-// Để tạm hàm ở đây
+const clients = new Map();
 
-const onCompleted = async ({ returnvalue}) => {
-  
-}
+const onCompleted = async ({ returnvalue }) => {
+  const { userId, workshopId, status } = returnvalue;
+  const key = `${workshopId}:${userId}`;
+  const res = clients.get(key);
+
+  if (res) {
+    res.write(`data: ${JSON.stringify({
+      status
+    })}\n\n`);
+    res.end();
+  }
+
+};
 
 const onFailed = async ({ failedReason }) => {
   
-}
+};
+
+registrationEvent.on('completed', onCompleted);
+registrationEvent.on('failed', onFailed);
+
+export { registrationEvent, clients };

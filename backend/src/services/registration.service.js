@@ -99,4 +99,16 @@ export const registrationService = {
       throw e;
     }
   },
+
+  getRegistrationStatus: async (workshopId, userId) => {
+    try {
+      const status = await registrationRepository.getRegistrationStatus(
+        workshopId,
+        userId,
+      );
+      return status;
+    } catch (e) {
+      throw e;
+    }
+  },
 };

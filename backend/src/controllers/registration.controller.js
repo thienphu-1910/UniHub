@@ -1,4 +1,5 @@
 import { registrationService } from "../services/registration.service.js";
+import { registrationEvent, clients } from "../jobs/events/registration.event.js";
 
 export const registrationController = {
   createRegistration: async (req, res) => {
@@ -18,7 +19,7 @@ export const registrationController = {
 
       return res.status(201).json({
         success: true,
-        message: "Registration created successfully",        
+        message: "Registration created successfully",
       });
     } catch (error) {
       console.log(error);
@@ -46,6 +47,46 @@ export const registrationController = {
         success: false,
         message: e?.message || "",
       });
+    }
+  },
+
+  getRegistrationStatus: async (req, res) => {
+    const { userId } = req.body;
+    const workshopId = req.params.workshopId;
+
+    try {
+      const status = await registrationService.getRegistrationStatus(
+        workshopId,
+        userId,
+      );
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders();
+
+      if (status) {
+        res.write(`data: ${JSON.stringify({
+          status
+        })}\n\n`);
+
+        res.end();
+      }
+
+      const key = `${workshopId}:${userId}`;
+      clients.set(key, res);
+
+      req.on("close", () => {
+        console.log("Client close connection!");
+        clients.delete(key);
+        res.end();
+      });
+      
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        message: "Database Unavailable",
+      })
     }
   },
 };

@@ -12,7 +12,7 @@ export const registrationRepository = {
     amount,
   }) => {
     try {
-      await sql`
+      const response = await sql`
         WITH new_registration AS (
           INSERT INTO registrations (
             id,
@@ -33,8 +33,8 @@ export const registrationRepository = {
             NULL,
             NULL
           )
-          RETURNING id as "registration_id"
-        )
+          RETURNING id as "registration_id", user_id AS "userId", workshop_id AS "workshopId", status
+        ), new_payments AS (
           INSERT INTO payments (
             registration_id,
             idempotency_key,
@@ -46,9 +46,11 @@ export const registrationRepository = {
           ) 
           SELECT registration_id, ${idempotencyKey}, ${amount}, ${paymentStatus}, NULL, NULL, NULL
           FROM new_registration
+        )
+        SELECT * FROM new_registration
       `;
 
-      return true;
+      return response[0] ?? null;
     } catch (error) {
       console.log(error);
       return false;
@@ -81,5 +83,19 @@ export const registrationRepository = {
     } catch (e) {
       throw e;
     }
-  }
+  },
+
+  getRegistrationStatus: async (workshopId, userId) => {
+    try {
+      const response = sql`
+        SELECT status
+        FROM registrations
+        WHERE workshop_id = ${workshopId} AND user_id = ${userId}
+      `;
+
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
 };

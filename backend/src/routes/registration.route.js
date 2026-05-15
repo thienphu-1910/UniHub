@@ -22,4 +22,11 @@ registrationRoute.get(
   registrationController.getAllWorkshopRegisteredStudent,
 );
 
+registrationRoute.get(
+  "/registration/:workshopId/status",
+  auth,
+  checkRole([userRoles.STUDENT]),
+  registrationController.getRegistrationStatus
+)
+
 export { registrationRoute };
