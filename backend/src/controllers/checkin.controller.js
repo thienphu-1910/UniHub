@@ -19,11 +19,17 @@ export const checkinController = {
     }
   },
   synchronizeCheckinData: async (req, res) => {
-    const { staffId, registrations: massiveCheckinData } =
-      req.body.registrations;
+    const { staffId, checkinData: checkinData } =
+      req.body;
       
     try {
-      await checkinService.synchronizeCheckinData(staffId, massiveCheckinData);
-    } catch (e) {}
+      const response = await checkinService.synchronizeCheckinData(staffId, checkinData);
+      return res.status(200).json(response);
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        message: e.message,
+      });
+    }
   },
 };

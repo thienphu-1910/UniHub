@@ -19,7 +19,7 @@ import { userStore } from "./store/useAuthStore";
 import WorkshopDetailPage from "./pages/WorkshopDetailPage";
 import CheckinPage from "./pages/CheckinPage";
 import useOnlineStatus from "./hooks/useOnlineStatus";
-import { getAllItems, saveItem, clearItems } from "./lib/indexedDB";
+import { getAllItems, clearItems } from "./lib/indexedDB";
 import { checkinService } from "./services/checkinService";
 import { useRef } from "react";
 
@@ -35,8 +35,10 @@ function App() {
       const data = await getAllItems();   
       if (data.length > 0) {
         try {
-          await checkinService.syncCheckinData(data);          
-          await clearItems();
+          const isSynced = await checkinService.syncCheckinData(user.userId, data);          
+          if (isSynced) {
+            await clearItems();
+          }
         } catch (e) {
           console.log(e);
         }
@@ -50,7 +52,7 @@ function App() {
       syncCheckinData();
     }
 
-  }, [isOnline, isStaff])
+  }, [isOnline, isStaff, user])
 
   useEffect(() => {
     const handleLogout = (event) => {

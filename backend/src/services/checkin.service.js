@@ -27,6 +27,10 @@ export const checkinService = {
   synchronizeCheckinData: async (staffId, checkinData) => {
     try {
       await checkinRepository.synchronizeCheckinData(staffId, checkinData);
+      return {
+        succes: true,
+        message: "Synchronized successfully",
+      };
     } catch (e) {
       throw e;
     }

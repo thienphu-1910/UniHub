@@ -41,6 +41,7 @@ export const authController = {
             role: user.role,
             studentId: user.studentId || null,
             email: user.email,
+            userId: user.userId,
           },
         },
       });
