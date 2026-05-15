@@ -2,16 +2,13 @@ import { checkinService } from "../services/checkin.service.js";
 
 export const checkinController = {
   checkin: async (req, res) => {
-    const {
-      staffId,
-      registrationId
-    } = req.body;
+    const { staffId, registrationId } = req.body;
 
     const workshopId = req.params.workshopId;
 
     try {
-      const response = await checkinService.checkin()
-      if (response.success) return res.status(203).json(response)
+      const response = await checkinService.checkin();
+      if (response.success) return res.status(203).json(response);
       else return res.status(404).json(response);
     } catch (e) {
       return res.status(503).json({
@@ -21,5 +18,12 @@ export const checkinController = {
       });
     }
   },
-  synchronizeCheckinData: async (req, res) => {},
+  synchronizeCheckinData: async (req, res) => {
+    const { staffId, registrations: massiveCheckinData } =
+      req.body.registrations;
+      
+    try {
+      await checkinService.synchronizeCheckinData(staffId, massiveCheckinData);
+    } catch (e) {}
+  },
 };

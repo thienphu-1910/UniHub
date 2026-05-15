@@ -24,5 +24,11 @@ export const checkinService = {
       throw e;
     }
   },
-  synchronizeCheckinData: async () => {},
+  synchronizeCheckinData: async (staffId, checkinData) => {
+    try {
+      await checkinRepository.synchronizeCheckinData(staffId, checkinData);
+    } catch (e) {
+      throw e;
+    }
+  },
 };
