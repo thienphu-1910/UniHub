@@ -1,47 +1,99 @@
-import {paymentQueue} from "../jobs/queues/payment.queue.js";
+import { paymentQueue } from "../jobs/queues/payment.queue.js";
+import { redisConnection } from "../config/queue.js";
+import { paymentRepository } from "../repositories/payment.repository.js";
 
-import redis from "../config/redis";
-import { paymentRepository } from "../repositories/payment.repository";
+export const addPaymentJob = async ({ registrationId, amount, idempotencyKey }) => {
+  const idempotencyRedisKey = `idempotency:${idempotencyKey}`;
+  const isProcessed = await redisConnection.get(idempotencyRedisKey);
 
-export const addPaymentJob = async({ registrationId, amount, idempotencyKey }) => {
-    const isProcessed = await paymentQueue.get(`idempotency:${idempotencyKey}`);
-    if (isProcessed) {
-        console.log(`Payment with idempotency key ${idempotencyKey} has already been processed.`);
-        return;
-    }
+  if (isProcessed) {
+    console.log(`Payment with idempotency key ${idempotencyKey} has already been processed.`);
+    return false;
+  }
 
-    await redis.set(`idempotency:${idempotencyKey}`, "processing", {
-        EX: 60 * 60, // Set expiration to 1 hour
+  await redisConnection.set(idempotencyRedisKey, "processing", "EX", 60 * 60);
+
+  await paymentQueue.add(
+    "process-payment",
+    { registrationId, amount, idempotencyKey },
+    { jobId: idempotencyKey }
+  );
+
+  return true;
+};
+
+export const initiatePayment = async ({ registrationId, amount, idempotencyKey }) => {
+  const queued = await addPaymentJob({ registrationId, amount, idempotencyKey });
+
+  if (!queued) {
+    throw new Error("Payment request has already been received");
+  }
+
+  return {
+    registrationId,
+    amount,
+    idempotencyKey,
+    status: "queued",
+  };
+};
+
+export const processWebhook = async (
+  registrationId,
+  status,
+  gateway,
+  gatewayTxnId,
+  rawResponse,
+  qrCodeData = null,
+  quickChartUrl = null
+) => {
+  const channel = `channel-${registrationId}`;
+
+  if (status === "success") {
+    await paymentRepository.updatePaymentSuccess({
+      registrationId,
+      gateway,
+      gatewayTxnId,
+      gatewayResponse: rawResponse,
+      qrCodeData,
+      quickChartUrl,
     });
 
-    await paymentQueue.add("process-payment", { registrationId, amount, idempotencyKey });
-}
+    await redisConnection.publish(
+      channel,
+      JSON.stringify({
+        type: "PAYMENT_SUCCESS",
+        data: {
+          registrationId,
+          gateway,
+          gatewayTxnId,
+          rawResponse,
+          qrCodeData,
+          quickChartUrl,
+        },
+      })
+    );
+  } else {
+    await paymentRepository.updatePaymentFailed({
+      registrationId,
+      gateway,
+      gatewayResponse: rawResponse,
+    });
 
-export const processWebhook = async (registrationId, status, gateway, txnId, rawResponse) => {
-    const channel = `channel-${registrationId}`;
-    if (status === "success") {
-        paymentRepository.updatePaymentSuccess(registrationId, gateway, txnId, rawResponse);
+    await redisConnection.publish(
+      channel,
+      JSON.stringify({
+        type: "PAYMENT_FAILED",
+        data: {
+          registrationId,
+          gateway,
+          rawResponse,
+        },
+      })
+    );
+  }
+};
 
-        redis.publish(channel, JSON.stringify({
-            type: "PAYMENT_SUCCESS",
-            data: {
-                registrationId,
-                gateway,
-                txnId,
-                rawResponse
-            }
-        }));
-    } else {
-        paymentRepository.updatePaymentFailed(registrationId, gateway, txnId, rawResponse);
-
-        redis.publish(channel, JSON.stringify({
-            type: "PAYMENT_FAILED",
-            data: {
-                registrationId,
-                gateway,
-                txnId,
-                rawResponse
-            }
-        }));
-    }
+export const paymentService = {
+  initiatePayment,
+  processWebhook,
 };

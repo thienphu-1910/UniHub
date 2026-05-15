@@ -30,10 +30,12 @@ app.get("/", (req, res) => {
 import { authRoute } from "./routes/auth.route.js";
 import { registrationRoute } from "./routes/registration.route.js";
 import { workshopRoute } from "./routes/workshop.route.js";
+import { paymentRoute } from "./routes/payment.route.js";
 
 app.use("/api", authRoute);
 app.use("/api", registrationRoute);
 app.use("/api", workshopRoute);
+app.use("/api", paymentRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is live on http://localhost:${PORT}`);
