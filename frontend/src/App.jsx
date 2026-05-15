@@ -27,7 +27,7 @@ function App() {
   const user = userStore((state) => state.user);  
 
   const isOnline = useOnlineStatus();  
-  const isIgnore = useRef(true);
+  const prevIsOnline = useRef(null);
   const isStaff = user.role === userRoles.STAFF;
 
   useEffect(() => {
@@ -43,13 +43,13 @@ function App() {
       }
     }
 
-    if (isStaff && isOnline && !isIgnore.current) {
+    const justCameOnline = isOnline && prevIsOnline.current === false;
+    prevIsOnline.current = isOnline;
+
+    if (isStaff && justCameOnline) {
       syncCheckinData();
     }
 
-    return () => {
-      isIgnore.current = false;
-    }
   }, [isOnline, isStaff])
 
   useEffect(() => {
