@@ -1,6 +1,7 @@
 import { paymentQueue } from "../jobs/queues/payment.queue.js";
 import { redisConnection } from "../config/queue.js";
 import { paymentRepository } from "../repositories/payment.repository.js";
+import { encrypt } from "../utils/crypto.js";
 
 export const addPaymentJob = async ({ registrationId, amount, idempotencyKey }) => {
   const idempotencyRedisKey = `idempotency:${idempotencyKey}`;
@@ -49,6 +50,9 @@ export const processWebhook = async (
   const channel = `channel-${registrationId}`;
 
   if (status === "success") {
+    const qrCodeData = encrypt(`${registrationId}`);
+    const quickChartUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300`;
+
     await paymentRepository.updatePaymentSuccess({
       registrationId,
       gateway,
@@ -57,7 +61,7 @@ export const processWebhook = async (
       qrCodeData,
       quickChartUrl,
     });
-
+    
     await redisConnection.publish(
       channel,
       JSON.stringify({

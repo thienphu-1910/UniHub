@@ -6,6 +6,7 @@ import { processWebhook } from "../../services/payment.service.js";
 const handleJob = async (job) => {
   try {
     console.log("Processing payment for registration ID:", job.data.registrationId);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const isPaymentSuccessful = Math.random() < 0.99999999;
 
     const gateway = "MockGateway";
@@ -15,17 +16,12 @@ const handleJob = async (job) => {
 
     if (isPaymentSuccessful) {
       const gatewayTxnId = `txn_${Math.random().toString(36).substr(2, 9)}`;
-      const qrCodeData = encrypt(`registrationId:${job.data.registrationId}`);
-      const quickChartUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300`;
-
       await processWebhook(
         job.data.registrationId,
         "success",
         gateway,
         gatewayTxnId,
         gatewayResponse,
-        qrCodeData,
-        quickChartUrl
       );
     } else {
       await processWebhook(
