@@ -67,5 +67,5 @@ export const registrationRepository = {
     } catch (e) {
       throw e;
     }
-  },
+  }
 };
