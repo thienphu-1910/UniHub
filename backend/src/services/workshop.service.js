@@ -1,7 +1,41 @@
 import { userRepository } from "../repositories/user.repository.js";
 import { workshopRepository } from "../repositories/workshop.repository.js";
+import { scheduleWorkshopCacheJob } from "../queues/workshopCache.queue.js";
 import { uploadToCloudinary } from "../utils/imageUpload.js";
+import { summarizeWorkshopPdf } from "./aiSummary.service.js";
 import redis from "../config/redis.js";
+
+const DEFAULT_REGISTRATION_OFFSET_DAYS = 3;
+
+const resolveRegistrationWindow = ({
+  startTime,
+  registrationStartTime,
+  registrationEndTime,
+}) => {
+  const workshopStartTime = new Date(startTime);
+  const resolvedRegistrationEndTime = registrationEndTime
+    ? new Date(registrationEndTime)
+    : workshopStartTime;
+  const resolvedRegistrationStartTime = registrationStartTime
+    ? new Date(registrationStartTime)
+    : new Date(
+        resolvedRegistrationEndTime.getTime() -
+          DEFAULT_REGISTRATION_OFFSET_DAYS * 24 * 60 * 60 * 1000,
+      );
+
+  if (resolvedRegistrationStartTime >= resolvedRegistrationEndTime) {
+    throw new Error("Registration start time must be before end time");
+  }
+
+  if (resolvedRegistrationEndTime > workshopStartTime) {
+    throw new Error("Registration end time must be before workshop start time");
+  }
+
+  return {
+    registrationStartTime: resolvedRegistrationStartTime,
+    registrationEndTime: resolvedRegistrationEndTime,
+  };
+};
 
 export const workshopService = {
   addNewWorkshop: async (payload, userId) => {
@@ -18,11 +52,15 @@ export const workshopService = {
         speakerAvatarUrl = uploadResult.secure_url;
       }
 
+      const pdfSummaryResult = await summarizeWorkshopPdf(payload.pdfFile);
+      const aiSummary = pdfSummaryResult.summary || "";
+      const summaryStatus = pdfSummaryResult.status || "failed";
+
       const workshopPayload = {
         title: payload.title || "",
         description: payload.description || "",
-        aiSummary: payload.aiSummary || "",
-        summaryStatus: payload.summaryStatus || "none",
+        aiSummary,
+        summaryStatus,
         speaker: {
           name: payload.speakerName || "",
           bio: payload.speakerBio || "",
@@ -32,6 +70,11 @@ export const workshopService = {
         roomDiagram: payload.roomDiagram || {},
         startTime: payload.startTime,
         endTime: payload.endTime,
+        ...resolveRegistrationWindow({
+          startTime: payload.startTime,
+          registrationStartTime: payload.registrationStartTime,
+          registrationEndTime: payload.registrationEndTime,
+        }),
         capacity: payload.capacity || 0,
         availableSlots: payload.capacity,
         price: payload.price || 0,
@@ -39,6 +82,12 @@ export const workshopService = {
       };
 
       const response = await workshopRepository.addNewWorkshop(workshopPayload);
+      if (response) {
+        await scheduleWorkshopCacheJob({
+          workshopId: response.id ?? response.workshopId,
+          registrationStartTime: response.registrationStartTime,
+        });
+      }
 
       return response;
     } catch (e) {
@@ -53,15 +102,15 @@ export const workshopService = {
       const exists = await redis.exists(setKey);
       const count = await redis.sCard(setKey);
 
-      if (exist === 1 && count > 0) {
-        const pipeline = redis.pipeline();
-        const ids = pipeline.sMembers(setKey);
+      if (exists === 1 && count > 0) {
+        const ids = await redis.sMembers(setKey);
+        const multi = redis.multi();
 
-        ids.forEach(id => pipeline.hGetAll(`workshop:${id}`));
+        ids.forEach((id) => { multi.hGetAll(`workshop:${id}`) });
 
-        const result = await pipeline.exec();
+        const result = await multi.exec();
 
-        return result.map(([err, val]) => val).filter(Boolean);
+        return result.filter(Boolean);
       }
 
       const response = await workshopRepository.getWorkshopList(page, limit);

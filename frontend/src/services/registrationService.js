@@ -13,5 +13,14 @@ export const registrationService = {
     } catch (e) {
       console.log(e);
     }
+  },
+
+  getWorkshopConfirmedRegistrations: async (workshopId) => {
+    try {
+      const response = await api.get(`/api/registrations/${workshopId}/confirmation`);
+      return response?.data?.data;
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

@@ -3,6 +3,11 @@ import cors from "cors";
 import morgan from "morgan";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
+import { authRoute } from "./routes/auth.route.js";
+import { registrationRoute } from "./routes/registration.route.js";
+import { workshopRoute } from "./routes/workshop.route.js";
+import { checkinRoute } from "./routes/checkin.route.js";
+import { paymentRoute } from "./routes/payment.route.js";
 
 
 const app = express();
@@ -27,15 +32,12 @@ app.get("/", (req, res) => {
   res.send("Server is running smoothly.");
 });
 
-import { authRoute } from "./routes/auth.route.js";
-import { registrationRoute } from "./routes/registration.route.js";
-import { workshopRoute } from "./routes/workshop.route.js";
-import { paymentRoute } from "./routes/payment.route.js";
 
 app.use("/api", authRoute);
 app.use("/api", registrationRoute);
 app.use("/api", workshopRoute);
 app.use("/api", paymentRoute);
+app.use("/api", checkinRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is live on http://localhost:${PORT}`);

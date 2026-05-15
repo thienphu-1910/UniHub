@@ -4,8 +4,9 @@ import { registrationRepository } from "../../repositories/registration.reposito
 
 const handleJob = async (job) => {
   try {
-    
     const response = await registrationRepository.createRegistration(job.data);
+    return response;
+
   } catch (e) {
     throw e;
   }
