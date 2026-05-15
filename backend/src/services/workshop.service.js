@@ -98,7 +98,7 @@ export const workshopService = {
 
   getWorkshopList: async (page = 1, limit = 10) => {
     try {
-      const setKey = "workshop:index";
+      const setKey = "workshop-index";
       const exists = await redis.exists(setKey);
       const count = await redis.sCard(setKey);
 
