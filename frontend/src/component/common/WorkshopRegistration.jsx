@@ -3,8 +3,15 @@ import { formatToVND } from "../../utils/currency";
 import Button from "./Button";
 import { Spinner } from "flowbite-react";
 import DisabledButton from "./DisabledButton";
+import { registrationService } from "../../services/registrationService";
 
-const RegisterBar = ({ price, onRegister, loading = false }) => {
+const RegisterBar = ({
+  price,
+  onRegister,
+  loading = false,
+  status,
+  onPayment,
+}) => {
   return (
     <div className="w-full ">
       <div className="flex flex-col gap-3 items-center">
@@ -21,7 +28,15 @@ const RegisterBar = ({ price, onRegister, loading = false }) => {
             <Spinner />
           </DisabledButton>
         ) : (
-          <Button onClick={onRegister}>Register</Button>
+          <>
+            {status === null && <Button onClick={onRegister}>Register</Button>}
+            {status === "pending" && (
+              <Button onClick={onPayment} variant="payment">
+                Pay
+              </Button>
+            )}
+            {status === "confirmed" && <div></div>}
+          </>
         )}
       </div>
     </div>
@@ -56,15 +71,19 @@ const PaymentBar = ({ onPayment, price }) => {
 };
 
 const WorkshopRegistration = ({ workshopId, price }) => {
-  const [registration, setRegistration] = useState({});
-  const [isLoading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // const [isLoading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
-  const [status, setStatus] = useState("pending");
-  const [isProcessing, setProcess] = useState(false);
+  const [status, setStatus] = useState(null);
+  //const [isProcessing, setProcess] = useState(false);
 
   const onRegister = async () => {
-    setProcess(true);
+    setStatus('processing');
+    const { success, message } = await registrationService.registerWorkshop(workshopId);    
+    console.log(message);
+    if (success) {
+      setStatus('pending');      
+    }
   };
 
   const onPayment = async () => {};
@@ -86,22 +105,37 @@ const WorkshopRegistration = ({ workshopId, price }) => {
 
     loadRegistrationStatus();
 
-    return () => {
-      isMounted = false;
+    const eventSource = new EventSource(`${import.meta.env.VITE_API_URL}/api/registratoins/${workshopId}/status`);
+
+    eventSource.addEventListener('regsitration-status', (event) => {
+      const parsedStatus = JSON.parse(event.data);
+
+      setStatus(parsedStatus.status);
+
+    })
+
+    eventSource.onerror = (error) => {
+      console.error("SSE connection failed:", error);
+      eventSource.close();
     };
-  }, []);
+
+    return () => {
+      eventSource.close();
+    };
+  }, [workshopId]);
 
   return (
     <div className="w-full bg-white rounded-xl border border-slate-200 p-6 sm:p-8 flex flex-col gap-8 shadow-sm">
       <h2 className="w-full text-2xl font-bold text-slate-900">Registration</h2>
 
-      {status === "pending" && (
-        <RegisterBar
-          price={price}
-          onRegister={onRegister}
-          loading={isProcessing}
-        />
-      )}
+      <RegisterBar
+        price={price}
+        onRegister={onRegister}
+        loading={status === 'processing'}
+        status={status}
+        onPayment={onPayment}
+      />
+
       {status === "confirmed" && (
         <PaymentBar onPayment={onPayment} price={price} />
       )}

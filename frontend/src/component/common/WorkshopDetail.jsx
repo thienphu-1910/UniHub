@@ -74,7 +74,8 @@ const WorkshopDetail = ({ workshop }) => {
               Registration Time
             </span>
             <span className="font-semibold text-slate-800 text-sm">
-              {formatDate(workshop.registrationStartTime)}
+              {formatDate(workshop.registrationStartTime)} -
+              {formatDate(workshop.registrationEndTime)}
             </span>
           </div>
         </div>

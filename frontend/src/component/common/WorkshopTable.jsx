@@ -14,7 +14,7 @@ import { userStore } from "../../store/useAuthStore";
 const WorkshopTable = ({ workshops }) => {
   const navigate = useNavigate();
 
-  const role = userStore((state) => state.user);
+  const { role } = userStore((state) => state.user);
 
   return (
     <div className="w-full bg-white border border-gray-200 rounded-xl px-5 py-4">
@@ -53,7 +53,7 @@ const WorkshopTable = ({ workshops }) => {
               </div>
             </th>
             <th className="text-left text-sm font-medium text-gray-500 pb-3 px-3">
-              Time
+              {role === userRoles.STUDENT ? "Registration Time" : "Time"}
             </th>
             <th className="text-left text-sm font-medium text-gray-500 pb-3 px-3">
               Room
@@ -123,7 +123,11 @@ const WorkshopTable = ({ workshops }) => {
 
                   {/* Time */}
                   <td className="py-3 px-3 text-sm text-gray-700 whitespace-normal leading-snug">
-                    {formatDate(role === userRoles.ORGANIZER ? w.startTime : w.registrationStartTime)}
+                    {formatDate(
+                      role === userRoles.STUDENT
+                        ? w.registrationStartTime
+                        : w.startTime,
+                    )}
                   </td>
 
                   {/* Room */}

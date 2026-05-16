@@ -22,5 +22,23 @@ export const registrationService = {
     } catch (e) {
       console.log(e);
     }
+  },
+
+  registerWorkshop: async (workshopId) => {
+    try {
+      const response = await api.post(
+        `/api/registrations/${workshopId}`,
+        {},
+        {
+          headers: {
+            "x-api-key": import.meta.env.VITE_API_KEY,
+          },
+        },
+      );      
+      return response?.data;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 }

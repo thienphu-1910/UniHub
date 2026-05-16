@@ -54,9 +54,16 @@ const WorkshopDetailPage = () => {
   const handleDelete = async () => {
     const { success } = await workshopService.deleteWorkshop(id);
     if (success) {
-      navigate('/workshops');
+      navigate("/workshops");
     }
   };
+
+  const now = new Date();
+  const regStartTime = new Date(workshop.registrationStartTime);
+  const regEndTime = new Date(workshop.registrationEndTime);
+  const isRegistrationOpen = (now >= regStartTime) && (now <= regEndTime)
+
+  //const isRegistrationOpen = ()
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -129,14 +136,14 @@ const WorkshopDetailPage = () => {
             {user.role === userRoles.ORGANIZER && (
               <RegisteredStudents workshopId={id} />
             )}
-            {user.role === userRoles.STUDENT && (
+            {user.role === userRoles.STUDENT && isRegistrationOpen && (
               <WorkshopRegistration workshopId={id} price={workshop.price} />
             )}
           </div>
           {confirm}
           {show && (
-          <ConfirmationDialog
-            title={`Delete ${workshop.title}`}
+            <ConfirmationDialog
+              title={`Delete ${workshop.title}`}
               content={`Do you want to delete ${workshop.title}?`}
               onCancel={() => setShow(false)}
               onConfirm={() => handleDelete()}
