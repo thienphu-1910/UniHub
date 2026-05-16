@@ -51,7 +51,6 @@ const WorkshopEdit = () => {
   const {
     description,
     capacity,
-    availableSlots,
     room,
     startTime,
     endTime,
@@ -78,29 +77,32 @@ const WorkshopEdit = () => {
       description: description ?? "",
       room: room ?? "",
       capacity: capacity ?? 0,
-      availableSlots: availableSlots ?? 0,
       price: price ?? 0,
     },
   });
 
   const onSubmit = async (data, e) => {
       e.preventDefault();
-      const formData = new FormData();
   
-      // 1. Đưa các trường phẳng vào
-      formData.append("title", data.title);
-      formData.append("description", data.description || "");
-      formData.append("capacity", data.capacity);
-      formData.append("price", data.price || 0);
-      formData.append("room", data.room || "");
-      formData.append("startTime", data.startTime);
-      formData.append("endTime", data.endTime);
-      formData.append("registrationStartTime", data.regStartTime);
-      formData.append("registrationEndTime", data.regEndTime);
-  
+    const payload = {
+      description: data.description || "",
+      capacity: data.capacity,
+      room: data.room,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      registrationStartTime: data.regStartTime,
+      registrationEndTime: data.regEndTime,
+      title: data.title,
+      price: data.price || 0,
+    };
+    
       try {
-        //const { success, data } = await workshopService.addNewWorkshop(formData);
-  
+        const { success, data } = await workshopService.updateWorkshop(id, payload);
+        if (success && data) { 
+          reset();
+          navigate(`/workshops/${id}`);
+        }
+       
         //if (success && data) reset();
       } catch (e) {
         console.log(e);

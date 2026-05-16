@@ -52,5 +52,19 @@ export const workshopService = {
     } catch (e) {
       console.log(e);
     }
+  },
+
+  updateWorkshop: async (workshopId, payload) => {
+    try {
+      const response = await api.patch(`/api/workshops/${workshopId}`, {
+        payload,
+      }, {})
+
+      return response?.data;
+      
+
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

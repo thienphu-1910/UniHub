@@ -83,7 +83,6 @@ const WorkshopDetailPage = () => {
                       title: workshop.title,
                       description: workshop.description,
                       capacity: workshop.capacity,
-                      availableSlots: workshop.availableSlots,
                       room: workshop.room,
                       startTime: workshop.startTime,
                       endTime: workshop.endTime,
