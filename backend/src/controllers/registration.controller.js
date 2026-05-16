@@ -9,6 +9,10 @@ export const registrationController = {
         user: req.user,
       });
 
+      if (result?.success === false) {
+        return res.status(result.statusCode || 400).json(result);
+      }
+
       if (!result) {
         return res.status(409).json({
           success: false,

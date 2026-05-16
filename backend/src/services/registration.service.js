@@ -1,16 +1,13 @@
 import { randomUUID } from "node:crypto";
 import redis from "../config/redis.js";
-import {
-  REGISTRATION_HOLD_TTL_SECONDS,
-  buildMockPaymentUrl,
-} from "../config/registration.js";
+import { REGISTRATION_HOLD_TTL_SECONDS } from "../config/registration.js";
 import { registrationRepository } from "../repositories/registration.repository.js";
+import { userRepository } from "../repositories/user.repository.js";
 import {
   getWorkshopSlotsKey,
   workshopCacheService,
 } from "./workshopCache.service.js";
 
-const REGISTRATION_STATUS_PENDING = "PENDING";
 import { addRegistrationJob } from "../jobs/queues/registration.queue.js";
 import { registrationStatuses, paymentStatuses } from "../enums/status.enum.js";
 
@@ -31,6 +28,16 @@ export const registrationService = {
         statusCode: 403,
         code: "STUDENT_INFO_MISSING",
         message: "Student information is missing",
+      };
+    }
+
+    const currentUser = await userRepository.getUserViaId(user.userId);
+    if (!currentUser || currentUser.isActive === false) {
+      return {
+        success: false,
+        statusCode: 403,
+        code: "STUDENT_NOT_ELIGIBLE",
+        message: "Student is not active in the university registry",
       };
     }
 
@@ -96,12 +103,10 @@ export const registrationService = {
 
     const slotKey = getWorkshopSlotsKey(workshopId);
     const holdKey = `slot:hold:${workshopId}:${user.studentId}`;
-    const workshopKey = `workshop:${workshopId}`;
 
     const registrationId = randomUUID();
-    const registeredAt = new Date();
 
-    const isPaid = redis.hget(workshopKey, "isPaid") === "true";
+    const isPaid = cachedWorkshop.isPaid === true || cachedWorkshop.price > 0;
 
     const registrationStatus = isPaid
       ? registrationStatuses.PENDING
@@ -137,7 +142,7 @@ export const registrationService = {
         registrationStatus,
         paymentStatus,
         idempotencyKey: randomUUID(),
-        amount: Number.parseFloat(redis.hget(workshopKey, "price")),
+        amount: Number.parseFloat(cachedWorkshop.price || 0),
       });
 
       return true;
@@ -180,7 +185,8 @@ export const registrationService = {
 
   getWorkshopConfirmedRegistration: async (workshopId) => {
     try {
-      const registrations = registrationRepository.getWorkshopConfirmedRegistrations(workshopId);
+      const registrations =
+        await registrationRepository.getWorkshopConfirmedRegistrations(workshopId);
       return registrations;
     } catch (e) {
       throw e;

@@ -8,6 +8,7 @@ const checkinRoute = express.Router();
 
 checkinRoute.post(
   "/checkin/:workshopId",
+  apikeyMiddleware,
   auth,
   checkRole([userRoles.STAFF]),
   checkinController.checkin,
@@ -17,7 +18,8 @@ checkinRoute.post(
   "/checkin",
   apikeyMiddleware,
   auth,
-  checkRole([userRoles.STAFF], checkinController.synchronizeCheckinData),
+  checkRole([userRoles.STAFF]),
+  checkinController.synchronizeCheckinData,
 );
 
 export { checkinRoute };

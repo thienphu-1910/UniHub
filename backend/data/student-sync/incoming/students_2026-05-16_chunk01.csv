@@ -1,0 +1,6 @@
+student_id,full_name,email,status,updated_at
+23127288,Nguyen Van An,23127288@student.hcmus.edu.vn,active,2026-05-16T01:00:00+07:00
+23127299,Tran Thi Binh,23127299@student.hcmus.edu.vn,active,2026-05-16T01:05:00+07:00
+2312300,Le Minh Chau,2312300@student.hcmus.edu.vn,active,2026-05-16T01:10:00+07:00
+23127299,Tran Thi Binh Updated,23127299@student.hcmus.edu.vn,active,2026-05-16T01:15:00+07:00
+23127310,Pham Quoc Dung,23127310@student.hcmus.edu.vn,inactive,2026-05-16T01:20:00+07:00
