@@ -51,7 +51,12 @@ const WorkshopDetailPage = () => {
     };
   }, [id]);
 
-  const handleDelete = async () => {};
+  const handleDelete = async () => {
+    const { success } = await workshopService.deleteWorkshop(id);
+    if (success) {
+      navigate('/workshops');
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto">

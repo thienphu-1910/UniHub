@@ -66,5 +66,14 @@ export const workshopService = {
     } catch (e) {
       console.log(e);
     }
+  },
+
+  deleteWorkshop: async (workshopId) => {
+    try {
+      const response = await api.delete(`/api/workshops/${workshopId}`, {});
+      return response?.data;
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
