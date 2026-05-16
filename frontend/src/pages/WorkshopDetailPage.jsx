@@ -18,7 +18,8 @@ const WorkshopDetailPage = () => {
 
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [workshop, setWorkshop] = useState({});
+  const [workshop, setWorkshop] = useState({
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -74,10 +75,29 @@ const WorkshopDetailPage = () => {
               <h1 className="font-bold text-2xl text-slate-900">
                 Workshop Detail
               </h1>
-              <Link to={`/workshops/${id}/edit`} className="rounded border border-blue-500 p-2 bg-blue-50/50 text-blue-600 flex flex-row gap-2 items-center justify-center shadow-sm hover:scale-102 active:scale-98">
-                <SquarePen className="w-5 h-5" strokeWidth={1.5} />
-                Edit
-              </Link>
+              {user.role === userRoles.ORGANIZER &&
+                <Link
+                  to={`/workshops/${id}/edit`}
+                  state={{
+                    workshop: {
+                      title: workshop.title,
+                      description: workshop.description,
+                      capacity: workshop.capacity,
+                      availableSlots: workshop.availableSlots,
+                      room: workshop.room,
+                      startTime: workshop.startTime,
+                      endTime: workshop.endTime,
+                      registrationStartTime: workshop.registrationStartTime,
+                      registrationEndTime: workshop.registrationEndTime,
+                      price: workshop.price,
+                    },
+                  }}
+                  className="rounded border border-blue-500 p-2 bg-blue-50/50 text-blue-600 flex flex-row gap-2 items-center justify-center shadow-sm hover:scale-102 active:scale-98 px-3"
+                >
+                  <SquarePen className="w-5 h-5" strokeWidth={1.5} />
+                  Edit
+                </Link>
+              }
             </div>
           </div>
 
