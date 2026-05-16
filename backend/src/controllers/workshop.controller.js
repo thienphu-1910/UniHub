@@ -67,5 +67,23 @@ export const workshopController = {
         message: "Can not get workshop detail",
       });
     }
+  },
+
+  updateWorkshop: async (req, res) => {
+    const payload = req.validatedData;
+    const id = req.params.id;
+    try {
+      await workshopService.updateWorkshop(id, payload);
+
+      return res.status(200).json({
+        success: true,
+        message: "Update Workshop Successfully",
+      })
+    } catch (e) {
+      return res.status(500).json({
+        sucess: false,
+        message: e.message,
+      })
+    }
   }
 }

@@ -84,4 +84,36 @@ export const workshopRepository = {
       throw e;
     }
   },
+
+  updateWorkshop: async(id, {
+    title,
+    description,
+    room,
+    capacity,
+    availableSlots,
+    startTime,
+    endTime,
+    registrationStartTime,
+    registrationEndTime,
+    price
+  }) => {
+    try {
+      await sql`
+        UPDATE workshops
+        SET
+          title = ${title},
+          description = ${description},
+          room = ${room},
+          capacity = ${capacity},
+          available_slots = ${availableSlots},
+          start_time = ${startTime},
+          end_time = ${endTime},
+          registration_start_time = ${registrationStartTime},
+          registration_end_time = ${registrationEndTime}
+        WHERE id = ${id}
+      `; 
+    } catch (e) {
+      throw e;
+    }
+  }
 };
