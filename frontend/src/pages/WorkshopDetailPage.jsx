@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { workshopService } from "../services/workshopService";
 import { registrationService } from "../services/registrationService";
 import Loading from "../component/common/Loading";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, SquarePen } from "lucide-react";
 import Button from "../component/common/Button";
 import WorkshopDetail from "../component/common/WorkshopDetail";
 import RegisteredStudents from "../component/common/RegisteredStudents";
@@ -70,9 +70,15 @@ const WorkshopDetailPage = () => {
               <ArrowLeft className="w-4 h-4" />
               Back to Workshops
             </Button>
-            <h1 className="font-bold text-2xl text-slate-900">
-              Workshop Detail
-            </h1>
+            <div className="flex flex-row justify-between">
+              <h1 className="font-bold text-2xl text-slate-900">
+                Workshop Detail
+              </h1>
+              <Link to={`/workshops/${id}/edit`} className="rounded border border-blue-500 p-2 bg-blue-50/50 text-blue-600 flex flex-row gap-2 items-center justify-center shadow-sm hover:scale-102 active:scale-98">
+                <SquarePen className="w-5 h-5" strokeWidth={1.5} />
+                Edit
+              </Link>
+            </div>
           </div>
 
           {/* Main Content Card */}
@@ -82,7 +88,7 @@ const WorkshopDetailPage = () => {
             <RegisteredStudents workshopId={id} />
           )}
           {user.role === userRoles.STUDENT && (
-            <WorkshopRegistration workshopId={id} price={workshop.price}/>
+            <WorkshopRegistration workshopId={id} price={workshop.price} />
           )}
         </div>
       )}

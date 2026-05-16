@@ -22,6 +22,7 @@ import useOnlineStatus from "./hooks/useOnlineStatus";
 import { getAllItems, clearItems } from "./lib/indexedDB";
 import { checkinService } from "./services/checkinService";
 import { useRef } from "react";
+import WorkshopEdit from "./pages/WorkshopEdit";
 
 function App() {
   const user = userStore((state) => state.user);  
@@ -104,6 +105,8 @@ function App() {
                 path="/create-workshops"
                 element={<CreateWorkshopPage />}
               />
+              <Route path="/workshops/:id/edit"
+              element={<WorkshopEdit />}/>
             </Route>
 
             <Route element={<RoleBasedRoute allowedRoles={[userRoles.STAFF]} />}>
