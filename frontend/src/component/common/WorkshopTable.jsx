@@ -8,9 +8,13 @@ import {
   CircleUser,
 } from "lucide-react";
 import { formatToVND } from "../../utils/currency";
+import { userRoles } from "../../utils/userRole";
+import { userStore } from "../../store/useAuthStore";
 
 const WorkshopTable = ({ workshops }) => {
   const navigate = useNavigate();
+
+  const role = userStore((state) => state.user);
 
   return (
     <div className="w-full bg-white border border-gray-200 rounded-xl px-5 py-4">
@@ -24,8 +28,8 @@ const WorkshopTable = ({ workshops }) => {
           <col style={{ width: "10%" }} />
           <col style={{ width: "11%" }} />
           <col style={{ width: "11%" }} />
-          <col style={{ width: "16%" }} />
-          <col style={{ width: "12%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "8%" }} />
         </colgroup>
         <thead>
           <tr className="border-b border-gray-200">
@@ -89,7 +93,7 @@ const WorkshopTable = ({ workshops }) => {
                       <span
                         className={`text-sm truncate text-blue-700 font-bold`}
                       >
-                        {w.speakerName}
+                        {w.speaker.name}
                       </span>
                     </div>
                   </td>
@@ -119,7 +123,7 @@ const WorkshopTable = ({ workshops }) => {
 
                   {/* Time */}
                   <td className="py-3 px-3 text-sm text-gray-700 whitespace-normal leading-snug">
-                    {formatDate(w.startTime)}
+                    {formatDate(role === userRoles.ORGANIZER ? w.startTime : w.registrationStartTime)}
                   </td>
 
                   {/* Room */}
