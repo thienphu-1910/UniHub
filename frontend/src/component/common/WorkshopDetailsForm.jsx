@@ -2,6 +2,7 @@ import FormInput from "./FormInput";
 import FormContainer from "./FormContainer";
 import { Upload, FileText, X } from "lucide-react";
 import { useRef } from "react";
+import { formatToDatetimeLocal } from "../../utils/datetime";
 
 const WorkshopDetailsForm = ({
   register,
@@ -46,7 +47,6 @@ const WorkshopDetailsForm = ({
               }`}
               {...register("title", { required: "Workshop title is required" })}
               placeholder="Unihub Workshop"
-             
             />
             {errors.title && (
               <span className="text-red-500 text-xs mt-1">
@@ -140,6 +140,7 @@ const WorkshopDetailsForm = ({
                 label="Start Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.startTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("startTime", {
                   required: "Start Time is required",
@@ -170,6 +171,7 @@ const WorkshopDetailsForm = ({
                 label="End Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.endTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("endTime", {
                   required: "End Time is required",
@@ -196,6 +198,7 @@ const WorkshopDetailsForm = ({
                 label="Registration Start Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.regStartTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("regStartTime", {
                   required: "Registration Start Time is required",
@@ -221,6 +224,7 @@ const WorkshopDetailsForm = ({
                 label="Registration End Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.regEndTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("regEndTime", {
                   required: "Registration End Time is required",
@@ -248,16 +252,17 @@ const WorkshopDetailsForm = ({
               )}
             </div>
           </div>
-          {!edit &&
+          {!edit && (
             <div className="flex flex-col gap-2 items-start justify-center w-full">
               <h2 className="font-bold text-base">PDF File Upload</h2>
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className={`border border-dashed rounded-xl w-full flex flex-col items-center justify-center pt-5 pb-4 transition-colors ${currentFile
+                className={`border border-dashed rounded-xl w-full flex flex-col items-center justify-center pt-5 pb-4 transition-colors ${
+                  currentFile
                     ? "bg-blue-50 border-blue-400"
                     : "bg-gray-100 hover:bg-blue-100"
-                  }`}
+                }`}
               >
                 {currentFile ? (
                   <div className="flex flex-row justify-center items-center gap-2 px-4 w-full">
@@ -301,7 +306,7 @@ const WorkshopDetailsForm = ({
                 }}
               />
             </div>
-          }
+          )}
         </div>
       </div>
     </FormContainer>
