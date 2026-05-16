@@ -9,7 +9,7 @@ import { workshopRoute } from "./routes/workshop.route.js";
 import { checkinRoute } from "./routes/checkin.route.js";
 import { paymentRoute } from "./routes/payment.route.js";
 import { studentSyncRoute } from "./routes/studentSync.route.js";
-import "./workers/workshopCache.worker.js";
+import "./jobs/workers/workshopCache.worker.js";
 import "./jobs/workers/registration.worker.js";
 import "./jobs/workers/payment.worker.js";
 import "./jobs/workers/studentSync.worker.js";

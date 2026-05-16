@@ -1,10 +1,15 @@
 import { userRepository } from "../repositories/user.repository.js";
 import { workshopRepository } from "../repositories/workshop.repository.js";
-import { scheduleWorkshopCacheJob } from "../queues/workshopCache.queue.js";
+import { scheduleWorkshopCacheJob } from "../jobs/queues/workshopCache.queue.js";
 import { uploadToCloudinary } from "../utils/imageUpload.js";
 import { summarizeWorkshopPdf } from "./aiSummary.service.js";
 import redis from "../config/redis.js";
-import { workshopCacheService } from "./workshopCache.service.js";
+import {
+  WORKSHOP_CACHE_INDEX_KEY,
+  getWorkshopInfoKey,
+  getWorkshopSlotsKey,
+  workshopCacheService,
+} from "./workshopCache.service.js";
 
 const DEFAULT_REGISTRATION_OFFSET_DAYS = 3;
 
@@ -100,12 +105,21 @@ export const workshopService = {
 
   getWorkshopList: async (page = 1, limit = 10) => {
     try {
-      const setKey = "workshop-index";
-      const exists = await redis.exists(setKey);
-      const count = await redis.sCard(setKey);
+      const exists = await redis.exists(WORKSHOP_CACHE_INDEX_KEY);
+      const count = await redis.sCard(WORKSHOP_CACHE_INDEX_KEY);
 
       if (exists === 1 && count > 0) {
-        return workshopCacheService.getCachedWorkshops();
+        const workshops = await workshopCacheService.getCachedWorkshops();
+        const offset = (page - 1) * limit;
+        const list = workshops.slice(offset, offset + limit);
+        const totalPage = Math.max(1, Math.ceil(workshops.length / limit));
+
+        return {
+          list,
+          offset,
+          totalPage,
+          limit,
+        };
       }
 
       const response = await workshopRepository.getWorkshopList(page, limit);
@@ -118,8 +132,8 @@ export const workshopService = {
 
   getWorkshopDetail: async (workshopId) => {
     try {
-      const key = `workshop:${workshopId}:info`;
-      const slotKey = `workshop:${workshopId}:slots`;
+      const key = getWorkshopInfoKey(workshopId);
+      const slotKey = getWorkshopSlotsKey(workshopId);
       const exist = await redis.exists(key);
       if (exist) {
         const workshop =

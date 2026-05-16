@@ -120,7 +120,9 @@ export const workshopCacheService = {
     const tx = redis.multi();
 
     tx.hSet(infoKey, serializeWorkshop(workshop));
-    tx.set(slotsKey, String(workshop.availableSlots ?? workshop.capacity ?? 0));
+    tx.set(slotsKey, String(workshop.availableSlots ?? workshop.capacity ?? 0), {
+      NX: true,
+    });
     tx.sAdd(WORKSHOP_CACHE_INDEX_KEY, String(workshopId));
 
     if (ttlSeconds) {
