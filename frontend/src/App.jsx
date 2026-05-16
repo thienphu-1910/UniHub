@@ -28,7 +28,7 @@ function App() {
 
   const isOnline = useOnlineStatus();  
   const prevIsOnline = useRef(null);
-  const isStaff = user.role === userRoles.STAFF;
+  const isStaff = user?.role === userRoles.STAFF;
 
   useEffect(() => {
     const syncCheckinData = async () => {

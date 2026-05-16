@@ -100,7 +100,7 @@ export const workshopService = {
 
   getWorkshopList: async (page = 1, limit = 10) => {
     try {
-      const setKey = "workshop:index";
+      const setKey = "workshop-index";
       const exists = await redis.exists(setKey);
       const count = await redis.sCard(setKey);
 
@@ -122,7 +122,8 @@ export const workshopService = {
       const slotKey = `workshop:${workshopId}:slots`;
       const exist = await redis.exists(key);
       if (exist) {
-        const workshop = await workshopCacheService.getCachedWorkshop(workshopId);
+        const workshop =
+          await workshopCacheService.getCachedWorkshop(workshopId);
         const availableSlots = await redis.get(slotKey);
         return {
           ...workshop,

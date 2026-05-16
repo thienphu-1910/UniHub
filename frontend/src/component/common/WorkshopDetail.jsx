@@ -1,4 +1,4 @@
-import { Clock5, Building, Snowflake, UserStar } from "lucide-react";
+import { Clock5, Building, Snowflake, UserStar, NotebookPen } from "lucide-react";
 import { formatDate } from "../../utils/datetime";
 import { formatToVND } from "../../utils/currency";
 
@@ -57,6 +57,24 @@ const WorkshopDetail = ({ workshop }) => {
             </span>
             <span className="font-semibold text-slate-800 text-sm">
               {workshop.room}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-row gap-3 items-start">
+          <div className="rounded border border-green-100 p-2 bg-green-50/50 text-green-600">
+            <NotebookPen
+              color="#26d932"
+              className="w-5 h-5"
+              strokeWidth={1.5}
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+              Registration Time
+            </span>
+            <span className="font-semibold text-slate-800 text-sm">
+              {formatDate(workshop.registrationStartTime)}
             </span>
           </div>
         </div>
