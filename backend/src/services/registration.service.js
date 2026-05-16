@@ -13,6 +13,7 @@ import {
 const REGISTRATION_STATUS_PENDING = "PENDING";
 import { addRegistrationJob } from "../jobs/queues/registration.queue.js";
 import { registrationStatuses, paymentStatuses } from "../enums/status.enum.js";
+import { success } from "zod";
 
 export const registrationService = {
   createRegistration: async ({ workshopId, user }) => {
@@ -140,7 +141,10 @@ export const registrationService = {
         amount: Number.parseFloat(redis.hget(workshopKey, "price")),
       });
 
-      return true;
+      return {
+        success: true,
+        message: "Registration created successfully",
+      };
     } catch (error) {
       if (slotReserved) {
         try {

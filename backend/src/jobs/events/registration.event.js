@@ -15,8 +15,7 @@ const onCompleted = async ({ returnvalue }) => {
   if (res) {
     res.write(`data: ${JSON.stringify({
       status
-    })}\n\n`);
-    res.end();
+    })}\n\n`);    
   }
 
 };

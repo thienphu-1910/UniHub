@@ -9,11 +9,13 @@ export const registrationController = {
         user: req.user,
       });
 
-      if (!result) {
-        return res.status(409).json({
-          success: false,
-          code: "FULL_SLOTS",
-          message: "There is no available slot",
+      console.log(result);
+
+      if (!result.success) {
+        return res.status(result.statusCode).json({
+          success: result.success,
+          code: result.code,
+          message: result.message,
         });
       }
 
@@ -64,13 +66,12 @@ export const registrationController = {
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
       res.flushHeaders();
+      res.write(`event: registration_status\n`);
 
       if (status) {
         res.write(`data: ${JSON.stringify({
           status
-        })}\n\n`);
-
-        res.end();
+        })}\n\n`);        
       }
 
       const key = `${workshopId}:${userId}`;
