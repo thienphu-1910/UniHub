@@ -89,5 +89,20 @@ export const workshopController = {
         message: e.message,
       })
     }
+  },
+  deactivatingWorkshop: async (req, res) => {
+    const id = req.params.id;
+    try {
+      await workshopService.deactivatingWorkshop(id);
+      return res.status(200).json({
+        success: true,
+        message: "Deactivating successfully",
+      })
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        message: e.message ?? ""
+      })
+    }
   }
 }

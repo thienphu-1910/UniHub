@@ -155,4 +155,13 @@ export const workshopService = {
       throw e;
     }
   },
+
+  deactivatingWorkshop: async (id) => {
+    try {
+      await workshopRepository.deactivatingWorkshop(id);
+
+    } catch (e) {
+      throw e;
+    }
+  }
 };

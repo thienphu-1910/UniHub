@@ -42,4 +42,11 @@ workshopRoute.get(
   workshopController.getWorkshopDetail
 );
 
+workshopRoute.delete(
+  "/workshops/:id",
+  auth,
+  checkRole([userRoles.ORGANIZER]),
+  workshopController.deactivatingWorkshop
+);
+
 export { workshopRoute }
