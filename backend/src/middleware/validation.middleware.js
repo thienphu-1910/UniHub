@@ -24,7 +24,7 @@ export const workshopValidation = (req, res, next) => {
 }
 
 export const updatedWorkshopValidation = (req, res, next) => {
-  const payload = req.body;
+  const payload = req.body.payload;
 
   try {
     const workshopValidatedData = UpdatedWorkshopSchema.parse(payload);

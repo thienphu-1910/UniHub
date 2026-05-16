@@ -59,10 +59,10 @@ export const registrationRepository = {
 
   getWorkshopRegisteredStudents: async (workshopId) => {
     try {
-      const response = sql`
+      const response = await sql`
       SELECT u.id AS "userId", u.full_name AS "fullName", u.email AS "email", r.registered_at AS "registeredAt", r.status
       FROM registrations AS r JOIN users AS u ON r.user_id = u.id
-      WHERE r.workshop_id = ${workshopId} AND r.status IN ("pending", "confirmed")
+      WHERE r.workshop_id = ${workshopId} AND r.status IN ('pending', 'confirmed')
     `;
 
       return response;
@@ -104,7 +104,7 @@ export const registrationRepository = {
       const registrations = await sql`
         SELECT r.id AS "registrationId", u.id AS "userId", u.full_name AS "fullName", u.email AS "email", r.registered_at AS "registeredAt"
         FROM registrations AS r JOIN users AS u ON r.user_id = u.id
-        WHERE r.workshop_id = ${workshopId} AND r.status IN ("confirmed")
+        WHERE r.workshop_id = ${workshopId} AND r.status IN ('confirmed')
       `;
 
       return registrations;

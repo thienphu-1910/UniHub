@@ -22,7 +22,7 @@ export const workshopRepository = {
       const response = await sql`
       INSERT INTO workshops (title, description, ai_summary, summary_status, speaker, room, room_diagram, start_time, end_time, registration_start_time, registration_end_time, capacity, available_slots, price, created_by)
       VALUES (${title}, ${description}, ${aiSummary}, ${summaryStatus}, ${speaker}, ${room}, ${roomDiagram}, ${startTime}, ${endTime}, ${registrationStartTime}, ${registrationEndTime}, ${capacity}, ${availableSlots}, ${price}, ${createdBy})
-      RETURNING id, id AS "workshopId", title, description, ai_summary AS "aiSummary", summary_status AS "summaryStatus", speaker, room, room_diagram AS "roomDiagram", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", capacity, available_slots AS "availableSlots", price, created_by AS "createdBy"
+      RETURNING id AS "workshopId", title, description, ai_summary AS "aiSummary", summary_status AS "summaryStatus", speaker, room, room_diagram AS "roomDiagram", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", capacity, available_slots AS "availableSlots", price, created_by AS "createdBy"
     `;
       return response ? response[0] : null;
     } catch (e) {
@@ -90,7 +90,6 @@ export const workshopRepository = {
     description,
     room,
     capacity,
-    availableSlots,
     startTime,
     endTime,
     registrationStartTime,
@@ -98,20 +97,22 @@ export const workshopRepository = {
     price
   }) => {
     try {
-      await sql`
+      const result = await sql`
         UPDATE workshops
         SET
           title = ${title},
           description = ${description},
           room = ${room},
           capacity = ${capacity},
-          available_slots = ${availableSlots},
           start_time = ${startTime},
           end_time = ${endTime},
           registration_start_time = ${registrationStartTime},
           registration_end_time = ${registrationEndTime}
         WHERE id = ${id}
+        RETURNING id AS "workshopId", title, description, room, start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", capacity, available_slots AS "availableSlots", price 
       `; 
+
+      return result;
     } catch (e) {
       throw e;
     }

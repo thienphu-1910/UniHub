@@ -147,7 +147,10 @@ export const workshopService = {
 
   updateWorkshop: async(id, payload) => {
     try {
-      await workshopRepository.updateWorkshop(id, payload);
+      console.log(id, payload);
+      const result = await workshopRepository.updateWorkshop(id, payload);
+      
+      return result;
     } catch (e) {
       throw e;
     }

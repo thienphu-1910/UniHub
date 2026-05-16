@@ -73,13 +73,17 @@ export const workshopController = {
     const payload = req.validatedData;
     const id = req.params.id;
     try {
-      await workshopService.updateWorkshop(id, payload);
+      const result = await workshopService.updateWorkshop(id, payload);
 
       return res.status(200).json({
         success: true,
         message: "Update Workshop Successfully",
+        data: {
+          data: result,
+        }
       })
     } catch (e) {
+      console.log(e)
       return res.status(500).json({
         sucess: false,
         message: e.message,
