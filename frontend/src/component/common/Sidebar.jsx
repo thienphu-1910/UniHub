@@ -33,11 +33,11 @@ const Sidebar = () => {
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
-  const staffMenuItems = [
-    { name: "Dashboard", path: "/home", icon: LayoutDashboard },
-    { name: "Checkin", path: "/checkin", icon: ScanBarcode },
-    { name: "Settings", path: "/settings", icon: Settings },
-  ];
+  // const staffMenuItems = [
+  //   { name: "Dashboard", path: "/home", icon: LayoutDashboard },
+  //   { name: "Checkin", path: "/checkin", icon: ScanBarcode },
+  //   { name: "Settings", path: "/settings", icon: Settings },
+  // ];
 
   return (
     <div className="w-64 bg-[#0a2540] text-slate-300 flex flex-col h-screen fixed top-0 left-0 shadow-xl z-20">
@@ -59,13 +59,9 @@ const Sidebar = () => {
       {/* Navigation Menu */}
       <div className="flex-1 px-4 overflow-y-auto">
         <ul className="space-y-1.5">
-          {role !== userRoles.STAFF
-            ? menuItems.map((item) => (
-                <SidebarItem item={item} key={item.name} />
-              ))
-            : staffMenuItems.map((item) => (
-                <SidebarItem item={item} key={item.name} />
-              ))}
+          {menuItems.map((item) => (
+            <SidebarItem item={item} key={item.name} />
+          ))}
         </ul>
       </div>
 

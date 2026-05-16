@@ -4,7 +4,7 @@ import { formatToVND } from "../../utils/currency";
 
 const WorkshopDetail = ({ workshop }) => {
   return (
-    <div className="w-full bg-white rounded-xl border border-slate-200 p-6 sm:p-8 flex flex-col gap-8 shadow-sm">
+    <div className="w-full h-full bg-white rounded-xl border border-slate-200 p-6 sm:p-8 flex flex-col gap-8 shadow-sm">
       {/* Title & Price Row */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div className="flex flex-col gap-3">

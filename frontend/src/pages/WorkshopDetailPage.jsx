@@ -11,45 +11,16 @@ import { userStore } from "../store/useAuthStore";
 import { userRoles } from "../utils/userRole";
 import WorkshopRegistration from "../component/common/WorkshopRegistration";
 import ConfirmationDialog from "../component/common/ConfirmationDialog";
+import useWorkshopDetail from "../hooks/useWorkshopDetail";
 
 const WorkshopDetailPage = () => {
   const user = userStore((state) => state.user);
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [isLoading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [workshop, setWorkshop] = useState({});
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false);  
 
-  useEffect(() => {
-    let isMounted = true;
-    const loadWorkshopDetail = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const workshopRes = await workshopService.getWorkshopDetail(id);
-
-        if (isMounted) {
-          setWorkshop(workshopRes?.workshop ?? {});
-          console.log(workshopRes);
-        }
-      } catch (e) {
-        if (isMounted) setError(e);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadWorkshopDetail();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [id]);
+  const { workshop, isLoading, error } = useWorkshopDetail(id);
 
   const handleDelete = async () => {
     const { success } = await workshopService.deleteWorkshop(id);

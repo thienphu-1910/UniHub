@@ -22,7 +22,7 @@ workshopRoute.get(
   "/workshops",
   apikeyMiddleware,
   auth,
-  checkRole([userRoles.ORGANIZER, userRoles.STUDENT]),
+  //checkRole([userRoles.ORGANIZER, userRoles.STUDENT]),
   workshopController.getWorkshopList
 );
 
@@ -38,7 +38,7 @@ workshopRoute.get(
   "/workshops/:id",
   apikeyMiddleware,
   auth,
-  checkRole([userRoles.ORGANIZER, userRoles.STUDENT]),
+  //checkRole([userRoles.ORGANIZER, userRoles.STUDENT]),
   workshopController.getWorkshopDetail
 );
 

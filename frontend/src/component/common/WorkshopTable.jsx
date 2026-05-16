@@ -69,7 +69,11 @@ const WorkshopTable = ({ workshops }) => {
                 <tr
                   key={w.id}
                   className="border-b border-gray-100 hover:bg-blue-50 cursor-pointer"
-                  onClick={() => navigate(`/workshops/${w.id}`)}
+                  onClick={() => {
+                    role === userRoles.STAFF
+                      ? navigate(`/checkin/${w.id}`)
+                      : navigate(`/workshops/${w.id}`);
+                  }}
                 >
                   {/* Title */}
                   <td className="py-3 px-3">
@@ -141,6 +145,6 @@ const WorkshopTable = ({ workshops }) => {
       </table>
     </div>
   );
-}
+};
 
-export default WorkshopTable
+export default WorkshopTable;

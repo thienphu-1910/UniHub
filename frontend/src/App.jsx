@@ -88,6 +88,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/settings" element={<SettingPage />} />
+            <Route path="/workshops" element={<WorkshopsPage />} />
             <Route
               element={
                 <RoleBasedRoute
@@ -95,7 +96,6 @@ function App() {
                 />
               }
             >
-              <Route path="/workshops" element={<WorkshopsPage />} />
               <Route path="/workshops/:id" element={<WorkshopDetailPage />} />
             </Route>
             <Route
@@ -105,12 +105,13 @@ function App() {
                 path="/create-workshops"
                 element={<CreateWorkshopPage />}
               />
-              <Route path="/workshops/:id/edit"
-              element={<WorkshopEdit />}/>
+              <Route path="/workshops/:id/edit" element={<WorkshopEdit />} />
             </Route>
 
-            <Route element={<RoleBasedRoute allowedRoles={[userRoles.STAFF]} />}>
-              <Route path="/checkin" element={<CheckinPage />} />
+            <Route
+              element={<RoleBasedRoute allowedRoles={[userRoles.STAFF]} />}
+            >
+              <Route path="/checkin/:id" element={<CheckinPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/home" replace />} />
@@ -118,7 +119,10 @@ function App() {
         </Route>
 
         {/* Redirect from root based on auth status */}
-        <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />
+        <Route
+          path="/"
+          element={<Navigate to={user ? "/home" : "/login"} replace />}
+        />
       </Routes>
     </Router>
   );
