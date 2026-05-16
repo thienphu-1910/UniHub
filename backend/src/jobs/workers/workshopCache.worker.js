@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
-import { bullMQConnection } from "../config/bullmq.js";
-import { workshopRepository } from "../repositories/workshop.repository.js";
-import { workshopCacheService } from "../services/workshopCache.service.js";
+import { bullMQConnection } from "../../config/bullmq.js";
+import { workshopRepository } from "../../repositories/workshop.repository.js";
+import { workshopCacheService } from "../../services/workshopCache.service.js";
 import {
   CACHE_WORKSHOP_FOR_REGISTRATION_JOB,
   WORKSHOP_CACHE_QUEUE_NAME,

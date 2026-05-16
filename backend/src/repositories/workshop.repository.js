@@ -75,9 +75,36 @@ export const workshopRepository = {
   getWorkshopForCache: async (workshopId) => {
     try {
       const response = await sql`
-        SELECT id, description, title, speaker, is_paid AS "isPaid", price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", room, room_diagram AS "roomDiagram", ai_summary AS "aiSummary", summary_status AS "summaryStatus", created_by AS "createdBy"
-        FROM workshops
-        WHERE id = ${workshopId}
+        SELECT
+          w.id,
+          w.description,
+          w.title,
+          w.speaker,
+          w.is_paid AS "isPaid",
+          w.price,
+          w.capacity,
+          GREATEST(
+            w.capacity - COALESCE(active_registrations.total, 0),
+            0
+          ) AS "availableSlots",
+          w.start_time AS "startTime",
+          w.end_time AS "endTime",
+          w.registration_start_time AS "registrationStartTime",
+          w.registration_end_time AS "registrationEndTime",
+          w.room,
+          w.room_diagram AS "roomDiagram",
+          w.ai_summary AS "aiSummary",
+          w.summary_status AS "summaryStatus",
+          w.created_by AS "createdBy"
+        FROM workshops AS w
+        LEFT JOIN (
+          SELECT workshop_id, COUNT(*)::int AS total
+          FROM registrations
+          WHERE status IN ('pending', 'confirmed')
+          GROUP BY workshop_id
+        ) AS active_registrations
+          ON active_registrations.workshop_id = w.id
+        WHERE w.id = ${workshopId}
       `;
 
       return response ? response[0] : null;
