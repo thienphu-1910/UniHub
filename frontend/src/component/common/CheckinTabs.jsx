@@ -125,7 +125,7 @@ const CheckinTabs = ({ handleScan, handleOpenCloseCamera, open, registrations })
 
           {/* Vùng chứa danh sách bên dưới: Cần flex-1 và min-h-0 để chiếm trọn phần còn lại và kích hoạt chế độ scroll nội bộ */}
           <div className="flex-1 min-h-0">
-            <RegistrationCards data={mockRegistrations} />
+            <RegistrationCards data={registrations} />
           </div>
         </div>
       </div>
