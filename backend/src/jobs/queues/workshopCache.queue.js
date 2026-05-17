@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { bullMQConnection } from "../config/bullmq.js";
+import { bullMQConnection } from "../../config/bullmq.js";
 
 export const WORKSHOP_CACHE_QUEUE_NAME = "workshop-cache";
 export const CACHE_WORKSHOP_FOR_REGISTRATION_JOB =

@@ -2,11 +2,11 @@ const registrationStatuses = Object.freeze({
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
   CANCELLED: 'cancelled',
-  CHECK_IN: 'check_in',
+  CHECKED_IN: 'checked_in',
 });
 
 const paymentStatuses = Object.freeze({
-  PENDING: 'peding',
+  PENDING: 'pending',
   PROCESSING: 'processing',
   SUCCESS: 'success',
   FAILED: 'failed',

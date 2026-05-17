@@ -8,6 +8,12 @@ import { registrationRoute } from "./routes/registration.route.js";
 import { workshopRoute } from "./routes/workshop.route.js";
 import { checkinRoute } from "./routes/checkin.route.js";
 import { paymentRoute } from "./routes/payment.route.js";
+import { studentSyncRoute } from "./routes/studentSync.route.js";
+import "./jobs/workers/workshopCache.worker.js";
+import "./jobs/workers/registration.worker.js";
+import "./jobs/workers/payment.worker.js";
+import "./jobs/workers/studentSync.worker.js";
+import { scheduleNightlyStudentSync } from "./jobs/queues/studentSync.queue.js";
 
 
 const app = express();
@@ -38,6 +44,11 @@ app.use("/api", registrationRoute);
 app.use("/api", workshopRoute);
 app.use("/api", paymentRoute);
 app.use("/api", checkinRoute);
+app.use("/api", studentSyncRoute);
+
+scheduleNightlyStudentSync().catch((error) => {
+  console.log("Can not schedule nightly student sync", error);
+});
 
 app.listen(PORT, () => {
   console.log(`Server is live on http://localhost:${PORT}`);

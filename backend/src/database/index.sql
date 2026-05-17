@@ -13,3 +13,10 @@ CREATE INDEX idx_workshops_status ON workshops(status);
 CREATE INDEX idx_workshops_start_time ON workshops(start_time);
 CREATE INDEX idx_registrations_status ON registrations(status);
 CREATE INDEX idx_payments_status ON payments(status);
+
+CREATE UNIQUE INDEX student_imports_completed_file_sha256_idx
+ON student_imports(file_sha256)
+WHERE status = 'completed' AND file_sha256 IS NOT NULL;
+
+CREATE INDEX idx_student_imports_started_at ON student_imports(started_at DESC);
+CREATE INDEX idx_users_student_active ON users(student_id) WHERE role = 'student' AND is_active = true;

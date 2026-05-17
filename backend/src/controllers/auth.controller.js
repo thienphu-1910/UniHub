@@ -20,6 +20,12 @@ export const authController = {
         });
       }
 
+      if (user.isActive === false) {
+        return res.status(403).json({
+          message: "This account is inactive!",
+        });
+      }
+
       const { accessToken, refreshToken, isAuthenticated } =
         await authService.authenticateUser(req.body.password, user);
 

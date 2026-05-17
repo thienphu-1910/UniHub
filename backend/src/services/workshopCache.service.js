@@ -51,6 +51,7 @@ const serializeWorkshop = (workshop) => {
     registrationStartTime: toIsoString(workshop.registrationStartTime),
     registrationEndTime: toIsoString(workshop.registrationEndTime),
     capacity: String(workshop.capacity ?? 0),
+    isPaid: String(Boolean(workshop.isPaid)),
     price: String(workshop.price ?? 0),
     createdBy: String(workshop.createdBy ?? ""),
     cachedAt: new Date().toISOString(),
@@ -74,6 +75,7 @@ const deserializeWorkshop = (hash) => {
     registrationStartTime: hash.registrationStartTime,
     registrationEndTime: hash.registrationEndTime,
     capacity: Number.parseInt(hash.capacity, 10) || 0,
+    isPaid: hash.isPaid === "true",
     price: Number.parseFloat(hash.price) || 0,
     createdBy: hash.createdBy,
     cachedAt: hash.cachedAt,
@@ -118,7 +120,9 @@ export const workshopCacheService = {
     const tx = redis.multi();
 
     tx.hSet(infoKey, serializeWorkshop(workshop));
-    tx.set(slotsKey, String(workshop.availableSlots ?? workshop.capacity ?? 0));
+    tx.set(slotsKey, String(workshop.availableSlots ?? workshop.capacity ?? 0), {
+      NX: true,
+    });
     tx.sAdd(WORKSHOP_CACHE_INDEX_KEY, String(workshopId));
 
     if (ttlSeconds) {

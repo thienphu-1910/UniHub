@@ -73,7 +73,7 @@ export const registrationRepository = {
 
   findWorkshopId: async (registrationId) => {
     try {
-      const response = sql`
+      const response = await sql`
         SELECT workshop_id AS "workshopId"
         FROM registrations
         WHERE id = ${registrationId}
@@ -87,7 +87,7 @@ export const registrationRepository = {
 
   getRegistrationStatus: async (workshopId, userId) => {
     try {
-      const response = sql`
+      const response = await sql`
         SELECT status
         FROM registrations
         WHERE workshop_id = ${workshopId} AND user_id = ${userId}

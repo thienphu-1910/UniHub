@@ -1,9 +1,15 @@
 import { userRepository } from "../repositories/user.repository.js";
 import { workshopRepository } from "../repositories/workshop.repository.js";
-import { scheduleWorkshopCacheJob } from "../queues/workshopCache.queue.js";
+import { scheduleWorkshopCacheJob } from "../jobs/queues/workshopCache.queue.js";
 import { uploadToCloudinary } from "../utils/imageUpload.js";
 import { summarizeWorkshopPdf } from "./aiSummary.service.js";
 import redis from "../config/redis.js";
+import {
+  WORKSHOP_CACHE_INDEX_KEY,
+  getWorkshopInfoKey,
+  getWorkshopSlotsKey,
+  workshopCacheService,
+} from "./workshopCache.service.js";
 
 const DEFAULT_REGISTRATION_OFFSET_DAYS = 3;
 
@@ -77,6 +83,7 @@ export const workshopService = {
         }),
         capacity: payload.capacity || 0,
         availableSlots: payload.capacity,
+        isPaid: Number.parseFloat(payload.price || 0) > 0,
         price: payload.price || 0,
         createdBy: userId,
       };
@@ -98,13 +105,14 @@ export const workshopService = {
 
   getWorkshopList: async (page = 1, limit = 10) => {
     try {
-      const setKey = "workshop-index";
-      const exists = await redis.exists(setKey);
-      const count = await redis.sCard(setKey);
+      const exists = await redis.exists(WORKSHOP_CACHE_INDEX_KEY);
+      const count = await redis.sCard(WORKSHOP_CACHE_INDEX_KEY);
 
       if (exists === 1 && count > 0) {
-        const ids = await redis.sMembers(setKey);
-        const multi = redis.multi();
+        const workshops = await workshopCacheService.getCachedWorkshops();
+        const offset = (page - 1) * limit;
+        const list = workshops.slice(offset, offset + limit);
+        const totalPage = Math.max(1, Math.ceil(workshops.length / limit));
 
         ids.forEach((id) => {
           multi.hGetAll(`workshop-${id}`);
@@ -125,13 +133,13 @@ export const workshopService = {
 
   getWorkshopDetail: async (workshopId) => {
     try {
-      const key = `workshop:${workshopId}`;
-      const slotKey = `workshop:${workshopId}:slots`;
+      const key = getWorkshopInfoKey(workshopId);
+      const slotKey = getWorkshopSlotsKey(workshopId);
       const exist = await redis.exists(key);
       if (exist) {
-        const workshop = await redis.hGet(key);
+        const workshop =
+          await workshopCacheService.getCachedWorkshop(workshopId);
         const availableSlots = await redis.get(slotKey);
-        workshop.price = Number.parseFloat(workshop.price);
         return {
           ...workshop,
           availableSlots,

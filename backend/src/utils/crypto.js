@@ -2,7 +2,10 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const SECRET_KEY = crypto.createHash('sha256').update(process.env.QR_SECRET_KEY).digest();
+const SECRET_KEY = crypto
+  .createHash('sha256')
+  .update(process.env.QR_SECRET_KEY || "unihub-dev-qr-secret")
+  .digest();
 const IV_LENGTH = 16;
 
 export const encrypt = (text) => {

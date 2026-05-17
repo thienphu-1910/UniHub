@@ -6,12 +6,12 @@ export const paymentRepository = {
         try {
             await sql`
                 UPDATE payments
-                SET status = '${paymentStatuses.SUCCESS}', gateway = ${gateway}, gateway_txn_id = ${gatewayTxnId}, gateway_response = ${gatewayResponse}, updated_at = CURRENT_TIMESTAMP
+                SET status = ${paymentStatuses.SUCCESS}, gateway = ${gateway}, gateway_txn_id = ${gatewayTxnId}, gateway_response = ${gatewayResponse}, updated_at = CURRENT_TIMESTAMP
                 WHERE registration_id = ${registrationId}
             `;
             await sql`
                 UPDATE registrations
-                SET status = '${registrationStatuses.CONFIRMED}', confirmed_at = CURRENT_TIMESTAMP, qr_code = ${qrCodeData}, qr_code_url = ${quickChartUrl} 
+                SET status = ${registrationStatuses.CONFIRMED}, confirmed_at = CURRENT_TIMESTAMP, qr_code = ${qrCodeData}, qr_code_url = ${quickChartUrl} 
                 WHERE id = ${registrationId}
             `;
         } catch (error) {
@@ -24,7 +24,7 @@ export const paymentRepository = {
         try {
             await sql`
                 UPDATE payments
-                SET status = '${paymentStatuses.FAILED}', gateway = ${gateway}, gateway_response = ${gatewayResponse}, updated_at = CURRENT_TIMESTAMP
+                SET status = ${paymentStatuses.FAILED}, gateway = ${gateway}, gateway_response = ${gatewayResponse}, updated_at = CURRENT_TIMESTAMP
                 WHERE registration_id = ${registrationId}   
             `;
         } catch (error) {
