@@ -107,5 +107,24 @@ export const registrationController = {
         message: "Database Unavailable",
       });
     }
+  },
+
+  getQRCodeData: async (req, res) => {
+    const workshopId = req.params.workshopId;
+    try {
+      const response = await registrationService.getQRCodeData(workshopId);
+      return res.status(200).json({
+        success: true,
+        message: "Get QR code data successfully",
+        data: {
+          qrCodeData: response,
+        }
+      });
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        message: "Database Unavailable",
+      });
+    }
   }
 };

@@ -37,4 +37,12 @@ registrationRoute.get(
   checkRole([userRoles.STAFF]),
   registrationController.getWorkshopConfirmedRegistration
 )
+
+registrationRoute.get(
+  "/registrations/:workshopId/qrcode",
+  auth,
+  checkRole([userRoles.STUDENT]),
+  registrationController.getQRCodeData
+);
+
 export { registrationRoute };
