@@ -1,6 +1,7 @@
 import express from "express";
 import { auth, checkRole } from "../middleware/auth.middleware.js";
 import { apikeyMiddleware } from "../middleware/apikey.middleware.js";
+import { registrationRateLimiter } from "../middleware/rateLimit.middleware.js";
 import { registrationController } from "../controllers/registration.controller.js";
 import { userRoles } from "../enums/role.enum.js";
 
@@ -11,6 +12,7 @@ registrationRoute.post(
   apikeyMiddleware,
   auth,
   checkRole([userRoles.STUDENT]),
+  registrationRateLimiter,
   registrationController.createRegistration,
 );
 
@@ -35,4 +37,12 @@ registrationRoute.get(
   checkRole([userRoles.STAFF]),
   registrationController.getWorkshopConfirmedRegistration
 )
+
+registrationRoute.get(
+  "/registrations/:workshopId/qrcode",
+  auth,
+  checkRole([userRoles.STUDENT]),
+  registrationController.getQRCodeData
+);
+
 export { registrationRoute };
