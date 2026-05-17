@@ -43,6 +43,11 @@ const RegisterBar = ({
                 <Spinner />
               </DisabledButton>
             )}
+            {status === "prepending" && (
+              <Button className="bg-green-600/50 hover:scale-100 active:scale-100" variant="payment">
+                Giữ chỗ thành công, đang chờ xử lý đăng ký...
+              </Button>
+            )}
           </>
         )}
       </div>
@@ -51,12 +56,9 @@ const RegisterBar = ({
 };
 
 const WorkshopRegistration = ({ workshopId, title, price }) => {
-  // const [isLoading, setLoading] = useState(true);
-  // const [error, setError] = useState(null);
-
   const [show, setShow] = useState(false);
   const [registration, setRegistration] = useState({});
-  //const [isProcessing, setProcess] = useState(false);
+  const [checkinData, setCheckinData] = useState({})
 
   const onRegister = async () => {
     setRegistration((r) => ({
@@ -100,6 +102,32 @@ const WorkshopRegistration = ({ workshopId, title, price }) => {
     };
   }, [workshopId]);
 
+
+  useEffect(() => {
+    if (!registration?.registrationId) return;
+
+    const eventSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/payemnts/stream/${registration.registrationId}`,
+      { withCredentials: true },
+    );
+
+    eventSource.addEventListener("payment-result", (event) => {
+      const parsedData = JSON.parse(event.data);
+      setCheckinData(parsedData);
+      console.log(parsedData);
+    });
+
+    eventSource.onerror = (error) => {
+      console.error("SSE connection failed:", error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+
+
+  }, [registration])
 
   const onPayClick = async () => {
     setShow(false);

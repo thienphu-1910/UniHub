@@ -1,5 +1,6 @@
 import { registrationService } from "../services/registration.service.js";
 import { registrationEvent, clients } from "../jobs/events/registration.event.js";
+import redis from "../config/redis.js";
 
 export const registrationController = {
   createRegistration: async (req, res) => {
@@ -57,6 +58,15 @@ export const registrationController = {
     const workshopId = req.params.workshopId;
 
     try {
+      const holdkey = `slot-hold-${workshopId}-${userId}`;
+      const id = await redis.get(holdkey);
+      if (id) {
+        res.write(`data: ${JSON.stringify({
+          status: "prepending",
+          registrationId: id,
+        })}\n\n`); 
+      }
+
       const {status, idempotencyKey, registrationId} = await registrationService.getRegistrationStatus(
         workshopId,
         userId,

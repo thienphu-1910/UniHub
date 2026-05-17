@@ -147,7 +147,7 @@ export const registrationService = {
     }
 
     const slotKey = getWorkshopSlotsKey(workshopId);
-    const holdKey = `slot-hold-${workshopId}-${user.studentId}`;
+    const holdKey = `slot-hold-${workshopId}-${user.userId}`;
 
     const registrationId = randomUUID();
 
@@ -188,6 +188,7 @@ export const registrationService = {
         paymentStatus,
         idempotencyKey: randomUUID(),
         amount: Number.parseFloat(cachedWorkshop.price || 0),
+        holdkey,
       });
 
       return {
