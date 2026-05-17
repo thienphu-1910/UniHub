@@ -6,6 +6,7 @@ import DisabledButton from "./DisabledButton";
 import { registrationService } from "../../services/registrationService";
 import PaymentQRDialog from "./PaymentQRDialog";
 import { paymentService } from "../../services/paymentService";
+import QRCodeDialog from "./QRCodeDialog";
 
 const RegisterBar = ({
   price,
@@ -13,7 +14,12 @@ const RegisterBar = ({
   loading = false,
   status,
   onPayment,
+  qrCodeUrl,
+  title
 }) => {
+
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="w-full ">
       <div className="flex flex-col gap-3 items-center">
@@ -37,20 +43,33 @@ const RegisterBar = ({
                 Pay
               </Button>
             )}
-            {status === "confirmed" && <div></div>}
+            {status === "confirmed" && (
+              <Button onClick={() => setOpen(true)} variant="payment">
+                Check In QR CODE
+              </Button>
+            )}
             {status === "payment-processing" && (
               <DisabledButton className="bg-green-600">
                 <Spinner />
               </DisabledButton>
             )}
             {status === "prepending" && (
-              <Button className="bg-green-600/50 hover:scale-100 active:scale-100" variant="payment">
+              <Button
+                className="bg-green-600/50 hover:scale-100 active:scale-100"
+                variant="payment"
+              >
                 Giữ chỗ thành công, đang chờ xử lý đăng ký...
               </Button>
             )}
           </>
         )}
       </div>
+      <QRCodeDialog
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        qrCodeUrl={qrCodeUrl}
+      />
     </div>
   );
 };
@@ -107,13 +126,13 @@ const WorkshopRegistration = ({ workshopId, title, price }) => {
     if (!registration?.registrationId) return;
 
     const eventSource = new EventSource(
-      `${import.meta.env.VITE_API_URL}/api/payemnts/stream/${registration.registrationId}`,
+      `${import.meta.env.VITE_API_URL}/api/payments/stream/${registration.registrationId}`,
       { withCredentials: true },
     );
 
     eventSource.addEventListener("payment-result", (event) => {
       const parsedData = JSON.parse(event.data);
-      setCheckinData(parsedData);
+      setCheckinData(parsedData.data);
       console.log(parsedData);
     });
 
@@ -160,6 +179,8 @@ const WorkshopRegistration = ({ workshopId, title, price }) => {
         loading={registration?.status === "processing"}
         status={registration?.status}
         onPayment={onPayment}
+        qrCodeUrl={checkinData?.qrCodeData?.qrCodeUrl || ""}
+        title={title}
       />
 
       {show && (

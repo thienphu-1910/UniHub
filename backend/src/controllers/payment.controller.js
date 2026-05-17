@@ -18,6 +18,7 @@ sseSubscriber.on("message", (channel, message) => {
 
   const payload = `data: ${message}\n\n`;
   for (const res of clients) {
+    res.write(`event: payment-result\n`);
     res.write(payload);
   }
 });
@@ -101,13 +102,16 @@ export const paymentController = {
     const channel = `channel-${registrationId}`;
 
     //Send QR code data if Qr code is already generated for the registration in db
-    const qrCodeData = await registrationService.getQRCodeData(registrationId);
+    const qrCodeData =
+      await registrationService.getQRCodeDataByRegistrationId(registrationId);
     const quickChartUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300`;
+    console.log('QR CODE DATA')
+    console.log(qrCodeData)
     if (qrCodeData) {
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
-      res.flushHeaders?.();
+      res.flushHeaders();
       const payload = `data: ${JSON.stringify({
         type: "PAYMENT_SUCCESS",
         data: {
@@ -116,6 +120,7 @@ export const paymentController = {
           quickChartUrl,
         },
       })}\n\n`;
+      res.write(`event: payment-result\n`);
       res.write(payload);
       return res.end();
     }
@@ -125,7 +130,7 @@ export const paymentController = {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders?.();
-    res.write(`event: payment-success\n`);
+    res.write(`event: payment-result\n`);
     const clients = channelClients.get(channel) || new Set();
     clients.add(res);
     channelClients.set(channel, clients);
