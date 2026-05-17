@@ -48,6 +48,9 @@ CREATE TABLE workshops (
     created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN default true,
+    registration_start_time TIMESTAMPTZ NOT NULL,
+    registration_end_time TIMESTAMPTZ NOT NULL,
     
     CONSTRAINT check_available_slots CHECK (available_slots >= 0 AND available_slots <= capacity)
 );
