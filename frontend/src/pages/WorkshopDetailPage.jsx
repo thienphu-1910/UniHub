@@ -41,7 +41,7 @@ const WorkshopDetailPage = () => {
       {isLoading && <Loading />}
 
       {error && (
-        <div className="text-red-500 font-semibold">{error.message}</div>
+        <div className="text-red-500 font-semibold">{error?.message}</div>
       )}
 
       {!isLoading && !error && (
@@ -111,7 +111,6 @@ const WorkshopDetailPage = () => {
               <WorkshopRegistration workshopId={id} price={workshop.price} />
             )}
           </div>
-          {confirm}
           {show && (
             <ConfirmationDialog
               title={`Delete ${workshop.title}`}

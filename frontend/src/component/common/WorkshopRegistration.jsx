@@ -89,27 +89,14 @@ const WorkshopRegistration = ({ workshopId, price }) => {
   const onPayment = async () => {};
 
   useEffect(() => {
-    let isMounted = true;
+    const eventSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/registrations/${workshopId}/status`,
+      { withCredentials: true },
+    );
 
-    const loadRegistrationStatus = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        //
-      } catch (e) {
-        if (isMounted) setError(e);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    loadRegistrationStatus();
-
-    const eventSource = new EventSource(`${import.meta.env.VITE_API_URL}/api/registratoins/${workshopId}/status`);
-
-    eventSource.addEventListener('regsitration-status', (event) => {
+    eventSource.addEventListener('registration-status', (event) => {
       const parsedStatus = JSON.parse(event.data);
-
+      console.log(parsedStatus)
       setStatus(parsedStatus.status);
 
     })
