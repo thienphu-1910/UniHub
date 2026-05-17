@@ -98,20 +98,28 @@ export const paymentController = {
       });
     }
 
-    const qrCodeData = await registrationService.getQRCodeDataByRegistrationId(registrationId);
-    const quickChartUrl = qrCodeData ? `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300` : null;
+    const channel = `channel-${registrationId}`;
+
+    //Send QR code data if Qr code is already generated for the registration in db
+    const qrCodeData = await registrationService.getQRCodeData(registrationId);
+    const quickChartUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300`;
     if (qrCodeData) {
-      return res.status(200).json({
-        success: true,
-        message: "QR code data retrieved successfully",
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders?.();
+      const payload = `data: ${JSON.stringify({
+        type: "PAYMENT_SUCCESS",
         data: {
+          registrationId,
           qrCodeData,
           quickChartUrl,
         },
-      });
-    } 
+      })}\n\n`;
+      res.write(payload);
+      return res.end();
+    }
 
-    const channel = `channel-${registrationId}`;
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
