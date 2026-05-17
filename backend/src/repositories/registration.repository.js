@@ -138,4 +138,28 @@ export const registrationRepository = {
       throw e;
     }
   },
+
+  getRegistrationWithDetails: async (registrationId) => {
+    try {
+      const response = await sql`
+        SELECT r.id AS "registrationId",
+               r.user_id AS "userId",
+               r.workshop_id AS "workshopId",
+               u.full_name AS "fullName",
+               u.email AS "email",
+               w.title AS "workshopTitle",
+               w.room AS "room",
+               r.qr_code AS "qrCode",
+               r.qr_code_url AS "qrCodeUrl"
+        FROM registrations r
+        JOIN users u ON r.user_id = u.id
+        JOIN workshops w ON r.workshop_id = w.id
+        WHERE r.id = ${registrationId}
+      `;
+
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
 };
