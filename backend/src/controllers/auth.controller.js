@@ -1,0 +1,118 @@
+import { userService } from "../services/user.service.js";
+import { authService } from "../services/auth.service.js";
+import jwt from "jsonwebtoken";
+
+const cookiesOptions = {
+  httpOnly: true,
+  sameSite: "strict",
+  secure: true,
+  path: "/",
+};
+
+export const authController = {
+  authenticateUser: async (req, res) => {
+    try {
+      const user = await userService.getUserViaEmail(req.body.email);
+
+      if (!user) {
+        return res.status(401).json({
+          message: "Can not authenticate!",
+        });
+      }
+
+      if (user.isActive === false) {
+        return res.status(403).json({
+          message: "This account is inactive!",
+        });
+      }
+
+      const { accessToken, refreshToken, isAuthenticated } =
+        await authService.authenticateUser(req.body.password, user);
+
+      if (isAuthenticated === false) {
+        return res.status(401).json({
+          message: "Can not authenticate!",
+        });
+      }
+
+      res.cookie("accessToken", accessToken, cookiesOptions);
+      res.cookie("refreshToken", refreshToken, cookiesOptions);
+
+      return res.status(200).json({
+        success: true,
+        message: "Login successfully",
+        data: {
+          user: {
+            fullName: user.fullName,
+            role: user.role,
+            studentId: user.studentId || null,
+            email: user.email,
+            userId: user.userId,
+          },
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal Server Error",
+      });
+    }
+  },
+
+  createToken: async (req, res) => {
+    const token = req.cookies.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({
+        status: "TOKEN_MISSING",
+        message: "Token is missing",
+      });
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
+
+      const user = await userService.getUserViaId(decoded.userId);
+      const accessToken = jwt.sign(user, process.env.ACCESS_SECRET, {
+        expiresIn: process.env.ACCESS_EXP,
+      });
+
+      res.cookie("accessToken", accessToken, cookiesOptions);
+
+      return res.status(200).json({
+        success: true,
+        message: "Create new access token",
+      });
+    } catch (e) {
+      if (e.name === "TokenExpiredError") {
+        return res.status(401).json({
+          status: "TOKEN_EXPIRED",
+          message: "Token is expired",
+        });
+      }
+
+      return res.status(401).json({
+        status: "INVALID_TOKEN",
+        message: "Invalid token",
+      });
+    }
+  },
+
+  logout: async (req, res) => {
+    try {
+      res.clearCookie("accessToken", cookiesOptions);
+      res.clearCookie("refreshToken", cookiesOptions);
+
+      return res.status(200).json({
+        success: true,
+        message: "Logout successfully",
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        success: false,
+        message: "Can not logout",
+      });
+    }
+  },
+};

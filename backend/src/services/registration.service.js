@@ -1,0 +1,265 @@
+import { randomUUID } from "node:crypto";
+import redis from "../config/redis.js";
+import { REGISTRATION_HOLD_TTL_SECONDS } from "../config/registration.js";
+import { registrationRepository } from "../repositories/registration.repository.js";
+import { userRepository } from "../repositories/user.repository.js";
+import { workshopRepository } from "../repositories/workshop.repository.js";
+import {
+  getWorkshopSlotsKey,
+  workshopCacheService,
+} from "./workshopCache.service.js";
+
+import { addRegistrationJob } from "../jobs/queues/registration.queue.js";
+import { WORKSHOP_CACHE_LEAD_TIME_MS } from "../jobs/queues/workshopCache.queue.js";
+import { registrationStatuses, paymentStatuses } from "../enums/status.enum.js";
+import { success } from "zod";
+
+const getRegistrationWindow = (workshop) => ({
+  registrationStartMs: new Date(workshop.registrationStartTime).getTime(),
+  registrationEndMs: new Date(workshop.registrationEndTime).getTime(),
+});
+
+const shouldRecoverWorkshopCache = (workshop, now = Date.now()) => {
+  const { registrationStartMs, registrationEndMs } =
+    getRegistrationWindow(workshop);
+
+  if (Number.isNaN(registrationStartMs) || Number.isNaN(registrationEndMs)) {
+    return false;
+  }
+
+  return (
+    now >= registrationStartMs - WORKSHOP_CACHE_LEAD_TIME_MS &&
+    now <= registrationEndMs
+  );
+};
+
+const getWorkshopForRegistration = async (workshopId) => {
+  const cachedWorkshop = await workshopCacheService.getCachedWorkshop(
+    workshopId,
+  );
+
+  if (cachedWorkshop) return cachedWorkshop;
+
+  const workshop = await workshopRepository.getWorkshopForCache(workshopId);
+  if (!workshop) return null;
+
+  if (shouldRecoverWorkshopCache(workshop)) {
+    await workshopCacheService.cacheWorkshopForRegistration(workshop);
+    return (
+      (await workshopCacheService.getCachedWorkshop(workshopId)) ?? workshop
+    );
+  }
+
+  return workshop;
+};
+
+export const registrationService = {
+  createRegistration: async ({ workshopId, user }) => {
+    if (!workshopId) {
+      return {
+        success: false,
+        statusCode: 400,
+        code: "WORKSHOP_ID_REQUIRED",
+        message: "Workshop id is required",
+      };
+    }
+
+    if (!user?.userId || !user?.studentId) {
+      return {
+        success: false,
+        statusCode: 403,
+        code: "STUDENT_INFO_MISSING",
+        message: "Student information is missing",
+      };
+    }
+
+    const currentUser = await userRepository.getUserViaId(user.userId);
+    if (!currentUser || currentUser.isActive === false) {
+      return {
+        success: false,
+        statusCode: 403,
+        code: "STUDENT_NOT_ELIGIBLE",
+        message: "Student is not active in the university registry",
+      };
+    }
+
+    const cachedWorkshop = await getWorkshopForRegistration(workshopId);
+
+    if (!cachedWorkshop) {
+      return {
+        success: false,
+        statusCode: 404,
+        code: "WORKSHOP_NOT_FOUND",
+        message: "Workshop not found",
+      };
+    }
+
+    const now = Date.now();
+    const { registrationStartMs, registrationEndMs } =
+      getRegistrationWindow(cachedWorkshop);
+
+    if (Number.isNaN(registrationStartMs) || Number.isNaN(registrationEndMs)) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_REGISTRATION_NOT_READY",
+        message: "Workshop registration window is not ready",
+      };
+    }
+
+    if (now < registrationStartMs) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_REGISTRATION_NOT_OPEN",
+        message: "Workshop registration is not open yet",
+      };
+    }
+
+    if (now > registrationEndMs) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_REGISTRATION_CLOSED",
+        message: "Workshop registration is closed",
+      };
+    }
+
+    let hasCachedSlots = await workshopCacheService.hasCachedSlots(
+      workshopId,
+    );
+
+    if (!hasCachedSlots) {
+      const workshop = await workshopRepository.getWorkshopForCache(workshopId);
+      if (workshop && shouldRecoverWorkshopCache(workshop, now)) {
+        await workshopCacheService.cacheWorkshopForRegistration(workshop);
+        hasCachedSlots = await workshopCacheService.hasCachedSlots(workshopId);
+      }
+    }
+
+    if (!hasCachedSlots) {
+      return {
+        success: false,
+        statusCode: 409,
+        code: "WORKSHOP_SLOTS_NOT_READY",
+        message: "Workshop slots are not ready",
+      };
+    }
+
+    const slotKey = getWorkshopSlotsKey(workshopId);
+    const holdKey = `slot-hold-${workshopId}-${user.userId}`;
+
+    const registrationId = randomUUID();
+
+    const isPaid = cachedWorkshop.isPaid === true || cachedWorkshop.price > 0;
+
+    const registrationStatus = isPaid
+      ? registrationStatuses.PENDING
+      : registrationStatuses.CONFIRMED;
+    const paymentStatus = isPaid
+      ? paymentStatuses.PENDING
+      : paymentStatuses.SUCCESS;
+
+    let slotReserved = false;
+
+    try {
+      const remainingSlots = await redis.decr(slotKey);
+      slotReserved = true;
+
+      if (remainingSlots < 0) {
+        await redis.incr(slotKey);
+        slotReserved = false;
+
+        return {
+          success: false,
+          statusCode: 409,
+          code: "WORKSHOP_FULL",
+          message: "Workshop is full",
+        };
+      }
+
+      await redis.setEx(holdKey, REGISTRATION_HOLD_TTL_SECONDS, registrationId);
+
+      await addRegistrationJob({
+        id: registrationId,
+        userId: user.userId,
+        workshopId: workshopId,
+        registrationStatus,
+        paymentStatus,
+        idempotencyKey: randomUUID(),
+        amount: Number.parseFloat(cachedWorkshop.price || 0),
+        holdKey,
+      });
+
+      return {
+        success: true,
+        message: "Registration created successfully",
+      };
+    } catch (error) {
+      if (slotReserved) {
+        try {
+          await redis.del(holdKey);
+          await redis.incr(slotKey);
+        } catch (rollbackError) {
+          console.log(rollbackError);
+        }
+      }
+
+      throw error;
+    }
+  },
+  getWorkshopRegisteredStudents: async (workshopId) => {
+    try {
+      const response =
+        await registrationRepository.getWorkshopRegisteredStudents(
+          workshopId,
+        );
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getRegistrationStatus: async (workshopId, userId) => {
+    try {
+      const result = await registrationRepository.getRegistrationStatus(
+        workshopId,
+        userId,
+      );
+      return result;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getWorkshopConfirmedRegistration: async (workshopId) => {
+    try {
+      const registrations =
+        await registrationRepository.getWorkshopConfirmedRegistrations(workshopId);
+      return registrations;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getQRCodeData: async (workshopId) => {
+    try {
+      const response = await registrationRepository.getQRCodeDetails(workshopId);
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getQRCodeDataByRegistrationId: async (registrationId) => {
+    try {
+      const response =
+        await registrationRepository.getQRCodeDetailsByRegistrationId(
+          registrationId,
+        );
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  }
+};

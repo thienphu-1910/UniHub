@@ -1,0 +1,5 @@
+student_id,email,full_name,action,is_active,password_reset,temporary_password,cancelled_registrations,error
+23127288,23127288@student.hcmus.edu.vn,Nguyen Van An,created,true,true,UniHub@123456,0,
+23127299,23127299@student.hcmus.edu.vn,Tran Thi Binh Updated,created,true,true,UniHub@123456,0,
+2312300,2312300@student.hcmus.edu.vn,Le Minh Chau,created,true,true,UniHub@123456,0,
+23127310,23127310@student.hcmus.edu.vn,Pham Quoc Dung,created,false,true,UniHub@123456,0,

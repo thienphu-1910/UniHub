@@ -1,0 +1,176 @@
+import sql from "../config/db.js";
+import { registrationStatuses, paymentStatuses } from "../enums/status.enum.js";
+
+export const registrationRepository = {
+  createRegistration: async ({
+    id,
+    userId,
+    workshopId,
+    registrationStatus,
+    paymentStatus,
+    idempotencyKey,
+    amount,
+  }) => {
+    try {
+      const response = await sql`
+        WITH new_registration AS (
+          INSERT INTO registrations (
+            id,
+            user_id,
+            workshop_id,
+            status,
+            qr_code,
+            qr_code_url,
+            confirmed_at,
+            cancelled_at
+          ) VALUES (
+            ${id},
+            ${userId},
+            ${workshopId},
+            ${registrationStatus},
+            NULL,
+            NULL,
+            NULL,
+            NULL
+          )
+          RETURNING id as "registration_id", user_id AS "userId", workshop_id AS "workshopId", status
+        ), new_payments AS (
+          INSERT INTO payments (
+            registration_id,
+            idempotency_key,
+            amount, 
+            status,
+            gateway,
+            gateway_txn_id,
+            gateway_response
+          ) 
+          SELECT registration_id, ${idempotencyKey}, ${amount}, ${paymentStatus}, NULL, NULL, NULL
+          FROM new_registration
+          RETURNING idempotency_key AS "idempotencyKey"
+        ), updated_available_slots AS (
+          UPDATE workshops
+          SET available_slots = available_slots - 1
+          WHERE id = ${workshopId}
+        )
+        SELECT 
+          r.registration_id AS "registrationId", 
+          r."workshopId", 
+          r."userId", 
+          r.status,
+          p."idempotencyKey"
+        FROM new_registration r
+        CROSS JOIN new_payments p
+      `;
+
+      return response[0] ?? null;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  },
+
+  getWorkshopRegisteredStudents: async (workshopId) => {
+    try {
+      const response = await sql`
+      SELECT u.id AS "userId", u.full_name AS "fullName", u.email AS "email", r.registered_at AS "registeredAt", r.status
+      FROM registrations AS r JOIN users AS u ON r.user_id = u.id
+      WHERE r.workshop_id = ${workshopId} AND r.status IN ('pending', 'confirmed')
+    `;
+
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  findWorkshopId: async (registrationId) => {
+    try {
+      const response = await sql`
+        SELECT workshop_id AS "workshopId"
+        FROM registrations
+        WHERE id = ${registrationId}
+      `;
+
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getRegistrationStatus: async (workshopId, userId) => {
+    try {
+      const response = await sql`
+        SELECT r.id AS "registrationId", r.status, p.idempotency_key AS "idempotencyKey"
+        FROM registrations AS r JOIN payments AS p ON r.id = p.registration_id
+        WHERE r.workshop_id = ${workshopId} AND r.user_id = ${userId}
+      `;
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getWorkshopConfirmedRegistrations: async (workshopId) => {
+    try {
+      const registrations = await sql`
+        SELECT r.id AS "registrationId", u.id AS "userId", u.full_name AS "fullName", u.email AS "email", r.registered_at AS "registeredAt"
+        FROM registrations AS r JOIN users AS u ON r.user_id = u.id
+        WHERE r.workshop_id = ${workshopId} AND r.status IN ('confirmed')
+      `;
+
+      return registrations;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getQRCodeDetails: async (workshopId) => {
+    try {
+      const response = await sql`
+        SELECT qr_code AS "qrCode", qr_code_url AS "qrCodeUrl"
+        FROM registrations
+        WHERE workshop_id = ${workshopId}
+      `;
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getQRCodeDetailsByRegistrationId: async (registrationId) => {
+    try {
+      const response = await sql`
+        SELECT qr_code AS "qrCode", qr_code_url AS "qrCodeUrl"
+        FROM registrations
+        WHERE id = ${registrationId}
+      `;
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getRegistrationWithDetails: async (registrationId) => {
+    try {
+      const response = await sql`
+        SELECT r.id AS "registrationId",
+               r.user_id AS "userId",
+               r.workshop_id AS "workshopId",
+               u.full_name AS "fullName",
+               u.email AS "email",
+               w.title AS "workshopTitle",
+               w.room AS "room",
+               r.qr_code AS "qrCode",
+               r.qr_code_url AS "qrCodeUrl"
+        FROM registrations r
+        JOIN users u ON r.user_id = u.id
+        JOIN workshops w ON r.workshop_id = w.id
+        WHERE r.id = ${registrationId}
+      `;
+
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+};
