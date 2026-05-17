@@ -250,4 +250,13 @@ export const registrationService = {
       throw e;
     }
   },
+
+  getQRCodeDataByRegistrationId: async (registrationId) => {
+    try {
+      const response = await registrationRepository.getQRCodeDataByRegistrationId(registrationId);
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  }
 };

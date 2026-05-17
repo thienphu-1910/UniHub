@@ -1,5 +1,6 @@
 import { Redis } from "ioredis";
 import { paymentService } from "../services/payment.service.js";
+import { registrationService } from "../services/registration.service.js";
 
 const sseSubscriber = new Redis({
   username: "default",
@@ -86,6 +87,8 @@ export const paymentController = {
   },
 
   streamEvents: async (req, res) => {
+
+    //Get QR code data for a registration if registration is confirmed
     const { registrationId } = req.params;
 
     if (!registrationId) {
@@ -96,6 +99,27 @@ export const paymentController = {
     }
 
     const channel = `channel-${registrationId}`;
+
+    //Send QR code data if Qr code is already generated for the registration in db
+    const qrCodeData = await registrationService.getQRCodeData(registrationId);
+    const quickChartUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300`;
+    if (qrCodeData) {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders?.();
+      const payload = `data: ${JSON.stringify({
+        type: "PAYMENT_SUCCESS",
+        data: {
+          registrationId,
+          qrCodeData,
+          quickChartUrl,
+        },
+      })}\n\n`;
+      res.write(payload);
+      return res.end();
+    }
+
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
