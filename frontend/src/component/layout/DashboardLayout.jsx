@@ -1,13 +1,14 @@
 import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import Sidebar from '../common/Sidebar';
+import { userStore } from '../../store/useAuthStore';
 
 const DashboardLayout = () => {
   // Simple check for auth state based on localStorage set during login
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const user = userStore((state) => state.user)
 
   // If not authenticated, redirect to login
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 

@@ -31,7 +31,7 @@ export const workshopController = {
 
   getWorkshopList: async (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = 100;
 
     try {
       const response = await workshopService.getWorkshopList(page, limit);

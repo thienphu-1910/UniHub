@@ -26,14 +26,14 @@ const CheckinPage = () => {
     workshop,
     isLoading: workshopLoading,
     error: workshopError,
-  } = useWorkshopDetail(id);
+  } = useWorkshopDetail(id, isOnline);
   //console.log(workshop)
 
   const {
     registrations,
     isLoading: registrationsLoading,
     error: registrationsError,
-  } = useConfirmedWorkshopRegistrations(id, workshop?.startTime, workshop?.endTime);
+  } = useConfirmedWorkshopRegistrations(id, workshop?.startTime, workshop?.endTime, isOnline);
 
   //console.log(registrations)
 
@@ -44,17 +44,25 @@ const CheckinPage = () => {
       const scannedValue = detectedCodes[0].rawValue;
       const decodedValue = await decrypt(scannedValue);
       console.log(decodedValue);
-
+      
       if (isOnline) {
         console.log(
           `Online: Sending check-in for ${scannedValue} directly to database.`,
         );
-        const success = await checkinService.checkin(decodedValue, id);
-      } 
+        try {
+          const success = await checkinService.checkin(decodedValue, id);
+        } catch (e) {
+          console.log(e);
+        } finally {
+          await checkIn(id, decodedValue);
+        }
+      } else {
+        await checkIn(id, decodedValue);
+      }
 
-      await checkIn(id, decodedValue);
+      
     },
-    [isOnline, id],
+    [id, isOnline],
   );
 
   return (
@@ -83,7 +91,7 @@ const CheckinPage = () => {
             <div className="w-full h-full flex flex-col items-center justify-center gap-5">
               <WorkshopDetail workshop={workshop} />
 
-              <CheckinTabs open={open} handleScan={handleScan} handleOpenCloseCamera={() => setOpen(!open)}/>
+              <CheckinTabs workshopId={id} open={open} handleScan={handleScan} handleOpenCloseCamera={() => setOpen(!open)}/>
             </div>
           </div>
         )}

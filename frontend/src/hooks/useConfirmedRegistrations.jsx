@@ -3,7 +3,7 @@ import { registrationService } from "../services/registrationService";
 import { isWorkshopEmpty, saveWorkshopRegistrations } from "../lib/indexedDB";
 import { userStore } from "../store/useAuthStore";
 
-const useConfirmedWorkshopRegistrations = (id, startTime, endTime) => {
+const useConfirmedWorkshopRegistrations = (id, startTime, endTime, isOnline) => {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [registrations, setRegistrations] = useState([]);
@@ -28,6 +28,13 @@ const useConfirmedWorkshopRegistrations = (id, startTime, endTime) => {
         const now = new Date().getTime();
         const start = new Date(startTime).getTime();
         const end = new Date(endTime).getTime();
+
+        if (isOnline === false) {
+          if (isMounted) {
+            setLoading(false);
+          }
+          return;
+        }
 
         // 2. CHECK THỜI GIAN TRONG LUỒNG AN TOÀN: Nếu nằm ngoài khung giờ, tắt loading và dừng lại
         if (now < start || now > end) {
@@ -74,7 +81,7 @@ const useConfirmedWorkshopRegistrations = (id, startTime, endTime) => {
     return () => {
       isMounted = false;
     };
-  }, [id, startTime, endTime]);
+  }, [id, startTime, endTime, user.userId, isOnline]);
 
   return {
     registrations,
