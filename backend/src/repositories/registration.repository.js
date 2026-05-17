@@ -91,9 +91,8 @@ export const registrationRepository = {
         SELECT status
         FROM registrations
         WHERE workshop_id = ${workshopId} AND user_id = ${userId}
-      `;
-
-      return response[0] ?? null;
+      `;      
+      return response[0]?.status ?? null;
     } catch (e) {
       throw e;
     }

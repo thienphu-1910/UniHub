@@ -114,13 +114,13 @@ export const workshopService = {
         const list = workshops.slice(offset, offset + limit);
         const totalPage = Math.max(1, Math.ceil(workshops.length / limit));
 
-        ids.forEach((id) => {
-          multi.hGetAll(`workshop-${id}`);
-        });
+        
 
-        const result = await multi.exec();
-
-        return result.filter(Boolean);
+        return {
+          list,
+          offset,
+          totalPage,  
+        }
       }
 
       const response = await workshopRepository.getWorkshopList(page, limit);

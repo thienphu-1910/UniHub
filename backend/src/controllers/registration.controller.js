@@ -53,7 +53,7 @@ export const registrationController = {
   },
 
   getRegistrationStatus: async (req, res) => {
-    const { userId } = req.body;
+    const { userId } = req.user;
     const workshopId = req.params.workshopId;
 
     try {
@@ -66,8 +66,7 @@ export const registrationController = {
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
       res.flushHeaders();
-      res.write(`event: registration_status\n`);
-
+      res.write(`event: registration-status\n`);
       if (status) {
         res.write(`data: ${JSON.stringify({
           status
@@ -93,8 +92,10 @@ export const registrationController = {
 
   getWorkshopConfirmedRegistration: async (req, res) => {
     const workshopId = req.params.workshopId;
+    //console.log(workshopId)
     try {
-      const registrations = registrationService.getWorkshopConfirmedRegistration(workshopId);
+      const registrations = await registrationService.getWorkshopConfirmedRegistration(workshopId);
+      
       return res.status(200).json({
         success: true,
         message: "Get registrations successfully",

@@ -21,7 +21,7 @@ const onCompleted = async ({ returnvalue }) => {
 };
 
 const onFailed = async ({ failedReason }) => {
-  
+  console.log(failedReason)
 };
 
 registrationEvent.on('completed', onCompleted);
