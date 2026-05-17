@@ -125,4 +125,17 @@ export const registrationRepository = {
       throw e;
     }
   },
+
+  getQRCodeDetailsByRegistrationId: async (registrationId) => {
+    try {
+      const response = await sql`
+        SELECT qr_code AS "qrCode", qr_code_url AS "qrCodeUrl"
+        FROM registrations
+        WHERE id = ${registrationId}
+      `;
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
 };

@@ -1,5 +1,6 @@
 import { Redis } from "ioredis";
 import { paymentService } from "../services/payment.service.js";
+import { registrationService } from "../services/registration.service.js";
 
 const sseSubscriber = new Redis({
   username: "default",
@@ -86,6 +87,8 @@ export const paymentController = {
   },
 
   streamEvents: async (req, res) => {
+
+    //Get QR code data for a registration if registration is confirmed
     const { registrationId } = req.params;
 
     if (!registrationId) {
@@ -94,6 +97,19 @@ export const paymentController = {
         message: "registrationId path parameter is required",
       });
     }
+
+    const qrCodeData = await registrationService.getQRCodeDataByRegistrationId(registrationId);
+    const quickChartUrl = qrCodeData ? `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300` : null;
+    if (qrCodeData) {
+      return res.status(200).json({
+        success: true,
+        message: "QR code data retrieved successfully",
+        data: {
+          qrCodeData,
+          quickChartUrl,
+        },
+      });
+    } 
 
     const channel = `channel-${registrationId}`;
 
