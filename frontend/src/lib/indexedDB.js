@@ -18,6 +18,8 @@ export async function saveWorkshopRegistrations(workshopId, registrations) {
   const db = await getDB();
   const tx = db.transaction(STORE, "readwrite");
   await tx.store.put({ workshopId, registrations });
+  console.log("REGISTRATIONS:");
+  console.log(registrations);
   await tx.done;
 }
 
@@ -33,7 +35,7 @@ export async function checkIn(workshopId, registrationId) {
   const db = await getDB();
   const tx = db.transaction(STORE, "readwrite");
   const record = await tx.store.get(workshopId);
-
+  console.log(record);
   if (!record) throw new Error(`Event ${workshopId} not found`);
 
   const registration = record.registrations.find(
@@ -72,8 +74,18 @@ export async function clearItems() {
 export async function isWorkshopEmpty(workshopId) {
   const db = await getDB();
   const tx = db.transaction(STORE, "readonly");
-  const store = tx.objectStore(STORE);
-  const count = store.count(workshopId);
 
-  return count === 0;
+  // Lấy toàn bộ record của workshop dựa vào khóa chính
+  const record = await tx.store.get(workshopId);
+
+  // Đợi transaction hoàn thành
+  await tx.done;
+
+  // Nếu chưa có record nào trong DB -> Coi như trống (true)
+  if (!record) {
+    return true;
+  }
+
+  // Nếu có record, kiểm tra độ dài của mảng registrations
+  return record.registrations.length === 0;
 }

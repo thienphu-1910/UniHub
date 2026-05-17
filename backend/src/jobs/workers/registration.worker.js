@@ -6,8 +6,8 @@ import redis from "../../config/redis.js";
 const handleJob = async (job) => {
   try {
     const response = await registrationRepository.createRegistration(job.data);
-    const { holdkey } = job.data;
-    await redis.del([holdkey]);
+    const { holdKey } = job.data;
+    await redis.del([holdKey]);
     return response;
 
   } catch (e) {

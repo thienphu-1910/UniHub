@@ -33,18 +33,15 @@ function App() {
 
   useEffect(() => {
     const syncCheckinData = async () => {
-      const data = await getAllWorkshops();   
-      console.log(data);
-      // if (data.length > 0) {
-      //   try {
-      //     const isSynced = await checkinService.syncCheckinData(user.userId, data);          
-      //     if (isSynced) {
-      //       await clearItems();
-      //     }
-      //   } catch (e) {
-      //     console.log(e);
-      //   }
-      // }
+      const data = await getAllWorkshops();  
+      if (data.length === 0) return;
+      const syncData = data.flatMap(d => d.registrations);
+      console.log(syncData);
+      try {
+        const response = await checkinService.syncCheckinData(syncData);
+      } catch (e) {
+        console.log(e);
+      }
     }
 
     const justCameOnline = isOnline && prevIsOnline.current === false;

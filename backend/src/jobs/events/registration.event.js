@@ -13,6 +13,7 @@ const onCompleted = async ({ returnvalue }) => {
   const res = clients.get(key);
 
   if (res) {
+    res.write(`event: registration-status\n`);
     res.write(`data: ${JSON.stringify({
       status,
       registrationId,

@@ -188,7 +188,7 @@ export const registrationService = {
         paymentStatus,
         idempotencyKey: randomUUID(),
         amount: Number.parseFloat(cachedWorkshop.price || 0),
-        holdkey,
+        holdKey,
       });
 
       return {

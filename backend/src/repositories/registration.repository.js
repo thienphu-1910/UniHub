@@ -47,6 +47,10 @@ export const registrationRepository = {
           SELECT registration_id, ${idempotencyKey}, ${amount}, ${paymentStatus}, NULL, NULL, NULL
           FROM new_registration
           RETURNING idempotency_key AS "idempotencyKey"
+        ), updated_available_slots AS (
+          UPDATE workshops
+          SET available_slots = available_slots - 1
+          WHERE id = ${workshopId}
         )
         SELECT 
           r.registration_id AS "registrationId", 

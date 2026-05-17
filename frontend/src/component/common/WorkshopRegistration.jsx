@@ -31,7 +31,7 @@ const RegisterBar = ({
           </DisabledButton>
         ) : (
           <>
-            {status === null && <Button onClick={onRegister}>Register</Button>}
+            {!status && <Button onClick={onRegister}>Register</Button>}
             {status === "pending" && (
               <Button onClick={onPayment} variant="payment">
                 Pay
@@ -133,6 +133,7 @@ const WorkshopRegistration = ({ workshopId, title, price }) => {
     setShow(false);
     try {
       const { registrationId, idempotencyKey } = registration;
+      console.log(registration)
       const result = await paymentService.payment(
         registrationId,
         idempotencyKey,
@@ -156,8 +157,8 @@ const WorkshopRegistration = ({ workshopId, title, price }) => {
       <RegisterBar
         price={price}
         onRegister={onRegister}
-        loading={registration.status === "processing"}
-        status={registration.status}
+        loading={registration?.status === "processing"}
+        status={registration?.status}
         onPayment={onPayment}
       />
 
