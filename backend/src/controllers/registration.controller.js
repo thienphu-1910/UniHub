@@ -57,7 +57,7 @@ export const registrationController = {
     const workshopId = req.params.workshopId;
 
     try {
-      const status = await registrationService.getRegistrationStatus(
+      const {status, idempotencyKey, registrationId} = await registrationService.getRegistrationStatus(
         workshopId,
         userId,
       );
@@ -69,7 +69,9 @@ export const registrationController = {
       res.write(`event: registration-status\n`);
       if (status) {
         res.write(`data: ${JSON.stringify({
-          status
+          status,
+          idempotencyKey,
+          registrationId
         })}\n\n`);        
       }
 

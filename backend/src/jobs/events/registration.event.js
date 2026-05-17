@@ -8,13 +8,15 @@ const registrationEvent = new QueueEvents('registration', {
 const clients = new Map();
 
 const onCompleted = async ({ returnvalue }) => {
-  const { userId, workshopId, status } = returnvalue;
+  const { userId, workshopId, status, registrationId, idempotencyKey } = returnvalue;
   const key = `${workshopId}:${userId}`;
   const res = clients.get(key);
 
   if (res) {
     res.write(`data: ${JSON.stringify({
-      status
+      status,
+      registrationId,
+      idempotencyKey
     })}\n\n`);    
   }
 

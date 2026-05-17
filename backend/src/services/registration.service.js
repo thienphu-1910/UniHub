@@ -147,7 +147,7 @@ export const registrationService = {
     }
 
     const slotKey = getWorkshopSlotsKey(workshopId);
-    const holdKey = `slot:hold:${workshopId}:${user.studentId}`;
+    const holdKey = `slot-hold-${workshopId}-${user.studentId}`;
 
     const registrationId = randomUUID();
 
@@ -221,11 +221,11 @@ export const registrationService = {
 
   getRegistrationStatus: async (workshopId, userId) => {
     try {
-      const status = await registrationRepository.getRegistrationStatus(
+      const result = await registrationRepository.getRegistrationStatus(
         workshopId,
         userId,
       );
-      return status;
+      return result;
     } catch (e) {
       throw e;
     }

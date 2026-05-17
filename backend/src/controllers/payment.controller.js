@@ -25,7 +25,7 @@ export const paymentController = {
   initiatePayment: async (req, res) => {
     try {
       const { registrationId, amount, idempotencyKey } = req.body;
-
+      console.log(req.body)
       if (!registrationId || !amount || !idempotencyKey) {
         return res.status(400).json({
           success: false,
@@ -101,7 +101,7 @@ export const paymentController = {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders?.();
-
+    res.write(`event: payment-success\n`);
     const clients = channelClients.get(channel) || new Set();
     clients.add(res);
     channelClients.set(channel, clients);

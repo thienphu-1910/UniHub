@@ -46,8 +46,16 @@ export const registrationRepository = {
           ) 
           SELECT registration_id, ${idempotencyKey}, ${amount}, ${paymentStatus}, NULL, NULL, NULL
           FROM new_registration
+          RETURNING idempotency_key AS "idempotencyKey"
         )
-        SELECT * FROM new_registration
+        SELECT 
+          r.registration_id AS "registrationId", 
+          r."workshopId", 
+          r."userId", 
+          r.status,
+          p."idempotencyKey"
+        FROM new_registration r
+        CROSS JOIN new_payments p
       `;
 
       return response[0] ?? null;
@@ -88,11 +96,11 @@ export const registrationRepository = {
   getRegistrationStatus: async (workshopId, userId) => {
     try {
       const response = await sql`
-        SELECT status
-        FROM registrations
-        WHERE workshop_id = ${workshopId} AND user_id = ${userId}
-      `;      
-      return response[0]?.status ?? null;
+        SELECT r.id AS "registrationId", r.status, p.idempotency_key AS "idempotencyKey"
+        FROM registrations AS r JOIN payments AS p ON r.id = p.registration_id
+        WHERE r.workshop_id = ${workshopId} AND r.user_id = ${userId}
+      `;
+      return response[0] ?? null;
     } catch (e) {
       throw e;
     }
