@@ -18,7 +18,7 @@ const useWorkshopDetail = (id) => {
 
         if (isMounted) {
           setWorkshop(workshopRes?.workshop ?? {});
-          console.log(workshopRes);
+          console.log(workshopRes.workshop);
         }
       } catch (e) {
         if (isMounted) setError(e);

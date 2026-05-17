@@ -68,3 +68,12 @@ export async function clearItems() {
   const db = await getDB();
   return db.clear(STORE);
 }
+
+export async function isWorkshopEmpty(workshopId) {
+  const db = await getDB();
+  const tx = db.transaction(STORE, "readonly");
+  const store = tx.objectStore(STORE);
+  const count = store.count(workshopId);
+
+  return count === 0;
+}

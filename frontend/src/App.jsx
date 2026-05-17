@@ -19,7 +19,7 @@ import { userStore } from "./store/useAuthStore";
 import WorkshopDetailPage from "./pages/WorkshopDetailPage";
 import CheckinPage from "./pages/CheckinPage";
 import useOnlineStatus from "./hooks/useOnlineStatus";
-import { getAllItems, clearItems } from "./lib/indexedDB";
+import { getAllWorkshops, clearItems } from "./lib/indexedDB";
 import { checkinService } from "./services/checkinService";
 import { useRef } from "react";
 import WorkshopEdit from "./pages/WorkshopEdit";
@@ -33,17 +33,18 @@ function App() {
 
   useEffect(() => {
     const syncCheckinData = async () => {
-      const data = await getAllItems();   
-      if (data.length > 0) {
-        try {
-          const isSynced = await checkinService.syncCheckinData(user.userId, data);          
-          if (isSynced) {
-            await clearItems();
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      }
+      const data = await getAllWorkshops();   
+      console.log(data);
+      // if (data.length > 0) {
+      //   try {
+      //     const isSynced = await checkinService.syncCheckinData(user.userId, data);          
+      //     if (isSynced) {
+      //       await clearItems();
+      //     }
+      //   } catch (e) {
+      //     console.log(e);
+      //   }
+      // }
     }
 
     const justCameOnline = isOnline && prevIsOnline.current === false;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Button from "../component/common/Button";
 import { ScanLine, CircleCheck, CircleX } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
@@ -9,6 +9,9 @@ import { useParams } from "react-router-dom";
 import WorkshopDetail from "../component/common/WorkshopDetail";
 import { decrypt } from "../utils/decrypt";
 import Loading from "../component/common/Loading";
+import useConfirmedWorkshopRegistrations from "../hooks/useConfirmedRegistrations";
+import { checkIn, isWorkshopEmpty, saveWorkshopRegistrations } from "../lib/indexedDB";
+import { checkinService } from "../services/checkinService";
 
 const CheckinStatus = ({ status, studentName, studentId }) => {
   return (
@@ -45,7 +48,9 @@ const CheckinStatus = ({ status, studentName, studentId }) => {
             <ScanLine />
           </div>
           <div className="flex flex-col h-fit">
-            <h2 className="font-bold text-xl text-black">Open Camera and Scan QR code</h2>
+            <h2 className="font-bold text-xl text-black">
+              Open Camera and Scan QR code
+            </h2>
           </div>
         </div>
       )}
@@ -60,96 +65,122 @@ const CheckinPage = () => {
   const isOnline = useOnlineStatus();
   console.log(isOnline);
 
-  const [offlineQueue, setOfflineQueue] = useState([]);
+  const {
+    workshop,
+    isLoading: workshopLoading,
+    error: workshopError,
+  } = useWorkshopDetail(id);
+  //console.log(workshop)
 
   const {
-    workshop, isLoading, error
-  } = useWorkshopDetail(id);
+    registrations,
+    isLoading: registrationsLoading,
+    error: registrationsError,
+  } = useConfirmedWorkshopRegistrations(id);
+
+  console.log(registrations)
 
   const handleScan = useCallback(
-    (detectedCodes) => {
+    async (detectedCodes) => {
       if (!detectedCodes || detectedCodes.length === 0) return;
 
       const scannedValue = detectedCodes[0].rawValue;
       const decodedValue = decrypt(scannedValue);
-      console.log(decodedValue)
+      console.log(decodedValue);
 
       if (isOnline) {
         console.log(
           `Online: Sending check-in for ${scannedValue} directly to database.`,
-        );        
-      } else {
-        console.log(`Offline: Queuing check-in for ${scannedValue}.`);
-        // Add the scanned code to our local queue to process later
-        setOfflineQueue((prevQueue) => [...prevQueue, scannedValue]);
-      }
-    },
-    [isOnline],
-  );
-  
-  useEffect(() => {
-    if (isOnline && offlineQueue.length > 0) {
-      console.log("Connection restored! Synchronizing queue...", offlineQueue);            
-    }
+        );
+        const success = await checkinService.checkin(decodedValue, id);
+      } 
 
-  }, [isOnline, offlineQueue]);
+      checkIn(id, decodedValue);
+    },
+    [isOnline, id],
+  );
+
+  // const hasSaved = useRef(false);
+
+  // useEffect(() => {
+  //   if (hasSaved.current === true) return;
+  //   const saveRegistrations = async () => {
+  //     try {
+  //       const isEmpty = await isWorkshopEmpty(id);
+  //       if (isEmpty && registrations && registrations.length > 0) {
+  //         await saveWorkshopRegistrations(id, registrations);
+  //         hasSaved.current = true;
+  //       }
+  //     } catch (e) {
+
+  //       console.log(e.message);
+  //     }
+  //   }
+
+  //   saveRegistrations();
+  // }, [registrations, id])
 
   return (
     <>
-      {isLoading && <Loading />}
-      {error && (
-        <div className="text-red-500 font-semibold">{error.message}</div>
+      {(workshopLoading || registrationsLoading) && <Loading />}
+      {(workshopError || registrationsError) && (
+        <div className="text-red-500 font-semibold">
+          {workshopError?.message} || {registrationsError?.message}
+        </div>
       )}
-      {!isLoading && !error && (
-        <div className="w-full h-full flex flex-col justify-between mb-4 items-baseline">
-          <h1 className="font-bold text-3xl mb-3">Workshop Check-in</h1>
-          <div className="w-full h-full flex flex-col items-center justify-center gap-5">
-            <WorkshopDetail workshop={workshop} />
+      {!workshopLoading &&
+        !registrationsLoading &&
+        !workshopError &&
+        !registrationsError && (
+          <div className="w-full h-full flex flex-col justify-between mb-4 items-baseline">
+            <h1 className="font-bold text-3xl mb-3">Workshop Check-in</h1>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-5">
+              <WorkshopDetail workshop={workshop} />
 
-            <div className="w-full h-full flex-1 grid grid-cols-2 gap-5">
-              <div className="h-full w-full flex flex-col gap-5 bg-white border border-gray-200 rounded-xl px-5 py-4">
-                <div className=" flex flex-row justify-between items-start">
-                  <h2 className="font-bold text-xl">Scanner Ready</h2>
-                  <Button className="w-fit" onClick={() => setOpen(!open)}>
-                    {open ? "Close Camera" : "Open Camera"}
-                  </Button>
+              <div className="w-full h-full flex-1 grid grid-cols-2 gap-5">
+                <div className="h-full w-full flex flex-col gap-5 bg-white border border-gray-200 rounded-xl px-5 py-4">
+                  <div className=" flex flex-row justify-between items-start">
+                    <h2 className="font-bold text-xl">Scanner Ready</h2>
+                    <Button className="w-fit" onClick={() => setOpen(!open)}>
+                      {open ? "Close Camera" : "Open Camera"}
+                    </Button>
+                  </div>
+                  <div className="flex flex-row justify-center items-center h-full w-full bg-blue-50/50 border-2 border-blue-700 rounded-lg">
+                    {open ? (
+                      <Scanner
+                        scanDelay={300}
+                        onScan={handleScan}
+                        onError={(error) => console.error(error)}
+                        classNames={{
+                          video: "h-full w-full object-cover scale-x-[-1]",
+                        }}
+                      />
+                    ) : (
+                      <ScanLine size={200} strokeWidth={0.5} color="#4c07ed" />
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-row justify-center items-center h-full w-full bg-blue-50/50 border-2 border-blue-700 rounded-lg">
-                  {open ? (
-                    <Scanner
-                      scanDelay={300}
-                      onScan={handleScan}
-                      onError={(error) => console.error(error)}
-                      classNames={{
-                        video: "h-full w-full object-cover scale-x-[-1]",
-                      }}
+                <div className="w-full h-full grid grid-rows-8 gap-5">
+                  <div className="w-full h-full row-span-2 border border-gray-200 rounded-lg">
+                    <CheckinStatus
+                      status="normal"
+                      studentName={"Phu Truong"}
+                      studentId={"23127455"}
                     />
-                  ) : (
-                    <ScanLine size={200} strokeWidth={0.5} color="#4c07ed" />
-                  )}
-                </div>
-              </div>
-              <div className="w-full h-full grid grid-rows-8 gap-5">
-                <div className="w-full h-full row-span-2 border border-gray-200 rounded-lg">
-                  <CheckinStatus
-                    status="normal"
-                    studentName={"Phu Truong"}
-                    studentId={"23127455"}
-                  />
-                </div>
-                <div className="flex flex-col w-full row-span-6 border border-gray-200 rounded-lg">
-                  <div className="w-full h-fit px-5 py-5 bg-slate-100 border-b border-b-gray-300 shadow-sm rounded-t-lg flex flex-row justify-between items-center">
-                    <h2 className="font-bold text-lg">Recent Check-ins</h2>
-                    <span className="font-normal text-sm text-slate-500">
-                      Latest first
-                    </span>
+                  </div>
+                  <div className="flex flex-col w-full row-span-6 border border-gray-200 rounded-lg">
+                    <div className="w-full h-fit px-5 py-5 bg-slate-100 border-b border-b-gray-300 shadow-sm rounded-t-lg flex flex-row justify-between items-center">
+                      <h2 className="font-bold text-lg">Recent Check-ins</h2>
+                      <span className="font-normal text-sm text-slate-500">
+                        Latest first
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </>
   );
 };
