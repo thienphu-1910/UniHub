@@ -241,4 +241,13 @@ export const registrationService = {
       throw e;
     }
   },
+
+  getQRCodeData: async (workshopId) => {
+    try {
+      const response = await registrationRepository.getQRCodeDetails(workshopId);
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  },
 };
