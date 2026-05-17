@@ -277,14 +277,67 @@ Ba role cố định với tập quyền tách biệt hoàn toàn:
 ## Thiết kế các cơ chế bảo vệ hệ thống
 
 ### Kiểm soát tải đột biến
-<!-- Giải pháp, thuật toán, ngưỡng, hành vi khi vượt ngưỡng -->
+
+* **Giải pháp & Thuật toán**: Sử dụng thuật toán **Token Bucket** làm tầng phòng ngự đầu tiên (Rate Limiting) để kiểm soát số lượng request tối đa mà hệ thống có thể tiếp nhận trong một đơn vị thời gian, ngăn chặn các cuộc tấn công DDoS hoặc lượng truy cập tăng đột biến làm sập API Server.
+* **Cơ chế lưu trữ và trừ slot**: Hệ thống sử dụng **Redis** để lưu trữ trạng thái số chỗ trống (slots) tạm thời. Khi request vượt qua tầng rate limit, hệ thống thực hiện trừ slot bằng các tác vụ nguyên tử (atomic operation) trực tiếp trên Redis nhằm tối ưu tốc độ phản hồi và ngăn chặn hoàn toàn hiện tượng bán vượt số lượng (oversell) khi có hàng ngàn sinh viên cùng tranh chấp suất đăng ký.
+
+
+* **Điều phối hàng đợi**: Thay vì đẩy ồ ạt toàn bộ yêu cầu vào cơ sở dữ liệu làm nghẽn nghẹt I/O, hệ thống sử dụng **BullMQ** để đóng vai trò làm bộ đệm điều tiết (throttling), phân phối các công việc (jobs) từ từ cho Worker xử lý theo năng lực chịu tải của hệ thống dưới nền.
+
+
+* **Hành vi phản hồi**: Sử dụng **Server-Sent Events (SSE)** để đẩy kết quả xử lý thành công hoặc thất bại theo thời gian thực từ server về lại cho sinh viên ngay khi Worker hoàn thành nhiệm vụ. Lựa chọn này giải quyết triệt để điểm yếu của kỹ thuật Polling (vốn gây lãng phí tài nguyên và tạo thêm tải cho hệ thống khi lượng user lớn), đồng thời tiết kiệm tài nguyên duy trì kết nối hơn so với WebSocket vốn không cần thiết cho luồng xử lý một chiều này.
+
+
 
 ### Xử lý cổng thanh toán không ổn định
-<!-- Giải pháp, các trạng thái, ngưỡng kích hoạt, hành vi khi lỗi -->
+
+* **Giải pháp**: Ứng dụng mô hình xử lý bất đồng bộ thông qua hàng đợi **BullMQ**. Thay vì bắt người dùng phải chờ kết nối đồng bộ trực tiếp với một cổng thanh toán bên thứ ba đang không ổn định (gây nguy cơ nghẽn kết nối và treo giao diện người dùng), mọi yêu cầu xử lý thanh toán sẽ được đóng gói thành một công việc và đưa vào hàng đợi.
+* **Hành vi khi lỗi**: Khi cổng thanh toán xảy ra lỗi hoặc phản hồi chậm, BullMQ sẽ giữ job lại và kích hoạt cơ chế tự động thử lại (Retry) ngầm theo chiến lược trì hoãn tăng dần (Exponential Backoff). Điều này tách biệt hoàn toàn trải nghiệm của người dùng ra khỏi sự bất ổn định của đối tác thanh toán, đảm bảo hệ thống không bị sập dây chuyền.
 
 ### Chống trừ tiền hai lần
-<!-- Cơ chế, nơi lưu trữ, TTL, luồng xử lý khi phát hiện trùng lặp -->
+
+* **Cơ chế**: Áp dụng cơ chế **Idempotency (Tính lũy đẳng)** dựa trên một chuỗi định danh duy nhất gọi là **Idempotency Key**.
+* **Luồng xử lý**: Khóa này được hệ thống tự động sinh ra ngay tại thời điểm sinh viên bắt đầu bấm nút khởi tạo đăng ký một workshop cụ thể. Khi request thanh toán được gửi đi, hệ thống sẽ đối chiếu Idempotency Key này trước khi xử lý giao dịch. Nếu phát hiện key này đã tồn tại và đang được xử lý (hoặc đã xử lý xong), hệ thống sẽ lập tức từ chối request trùng lặp và trả về kết quả của giao dịch trước đó, tránh việc sinh viên bị trừ tiền hai lần cho cùng một workshop.
+* **Nơi lưu trữ & TTL**: Khóa Idempotency được lưu trữ tập trung trong Redis với thời gian sống (TTL) được cấu hình vừa đủ dài (ví dụ: 24 giờ hoặc cho đến khi sự kiện kết thúc) để đảm bảo tính an toàn và tối ưu dung lượng bộ nhớ cache.
+
+---
 
 ## Các quyết định kỹ thuật quan trọng (ADR)
-<!-- Với mỗi quyết định lớn: lựa chọn gì, tại sao, đánh đổi gì.
-     Ví dụ: SQL vs NoSQL, JWT vs Session, Kafka vs RabbitMQ, ... -->
+
+### ADR 1: Lựa chọn Cơ sở dữ liệu Quan hệ (SQL - PostgreSQL) thay vì NoSQL
+
+* **Quyết định**: Sử dụng PostgreSQL làm cơ sở dữ liệu trung tâm để lưu trữ thông tin đăng ký chính thức.
+
+
+* **Lý do**: Hệ thống yêu cầu tính nhất quán dữ liệu tối cao (ACID) để quản lý số lượng suất tham gia giới hạn. Việc sử dụng SQL giúp đảm bảo tính toàn vẹn dữ liệu thông qua các ràng buộc chặt chẽ, loại bỏ hoàn toàn rủi ro bán trùng hoặc phân phối cùng một chỗ ngồi cho nhiều người (Race Condition).
+
+
+* **Đánh đổi**: Khả năng mở rộng theo chiều ngang (Horizontal Scaling) phức tạp hơn so với NoSQL và tốc độ ghi dữ liệu thô chậm hơn, tuy nhiên nhược điểm này đã được khắc phục hoàn toàn bằng việc đặt tầng đệm Redis và BullMQ xử lý bất đồng bộ ở phía trước.
+
+
+
+### ADR 2: Chấp nhận ngưng phục vụ tạm thời khi cụm Redis gặp sự cố (Fail-Stop Strategy)
+
+* **Quyết định**: Khi hệ thống Redis chết, toàn bộ luồng đăng ký của hệ thống sẽ được cấu hình để tạm ngưng hoạt động ngay lập tức thay vì chạy cơ chế dự phòng ghi thẳng vào database.
+
+
+* **Lý do**: Đảm bảo tính nhất quán dữ liệu tuyệt đối và bảo vệ người dùng không gặp lỗi hệ thống. Nếu cho phép luồng dữ liệu đi đường vòng bypass qua Redis để ghi thẳng vào PostgreSQL, cơ sở dữ liệu sẽ lập tức bị quá tải và sập nguồn do lượng request đồng thời quá lớn, dẫn đến sai lệch số liệu nghiêm trọng và mất kiểm soát số lượng suất đăng ký thực tế.
+
+
+* **Đánh đổi**: Tính sẵn sàng (Availability) của hệ thống bị giảm sút trong khoảnh khắc Redis gặp sự cố (ưu tiên Tính nhất quán - Consistency theo định lý CAP).
+
+### ADR 3: Lựa chọn BullMQ làm giải pháp Message Queue chính
+
+* **Quyết định**: Sử dụng BullMQ chạy trên nền tảng Redis để làm hệ thống quản lý hàng đợi và điều phối công việc.
+
+
+* **Lý do**: Do dự án đã lựa chọn Redis làm tầng lưu trữ trạng thái và xử lý concurrency. Xét trên khía cạnh thời gian hoàn thành dự án, phạm vi công việc và kinh phí đầu tư, việc chọn BullMQ đi kèm với Redis hiện có là giải pháp hợp lý nhất. Nó giúp giảm thiểu chi phí vận hành, không cần tốn tài nguyên cài đặt và bảo trì một cụm Message Queue độc lập khác (như Kafka hay RabbitMQ), đồng thời cực kỳ dễ triển khai và tích hợp mượt mà trong hệ sinh thái của nhóm.
+
+
+* **Đánh đổi**: Phụ thuộc chặt chẽ vào hiệu năng và dung lượng bộ nhớ của cụm Redis hiện tại.
+
+### ADR 4: Không xây dựng kiến trúc Redis Sentinel / Redis Cluster cho hạ tầng High Availability
+
+* **Quyết định**: Sử dụng một thực thể Redis độc lập (Standalone) nhưng bật chế độ ghi nhật ký **AOF (Append Only File)** định kỳ.
+* **Lý do**: Do giới hạn nghiêm ngặt về mặt kinh phí và thời gian triển khai của dự án, việc cấu hình một cụm Redis Sentinel phức tạp là không khả thi. Hơn thế nữa, nhờ cơ chế ghi đĩa AOF, dữ liệu trạng thái trên Redis không thực sự bị mất đi khi xảy ra sự cố sập nguồn đột ngột. Khi thực thể Redis được khởi động lại thành công, hệ thống sẽ tự động nạp lại file AOF để khôi phục chính xác trạng thái trước đó, mọi hoạt động sẽ trở lại bình thường.
+* **Đánh đổi**: Hệ thống sẽ phải chịu một khoảng thời gian gián đoạn ngắn (vài phút) để restart và khôi phục dữ liệu từ đĩa khi xảy ra crash, thay vì tự động chuyển vùng (failover) lập tức như kiến trúc Sentinel.
