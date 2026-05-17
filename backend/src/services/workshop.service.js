@@ -114,12 +114,13 @@ export const workshopService = {
         const list = workshops.slice(offset, offset + limit);
         const totalPage = Math.max(1, Math.ceil(workshops.length / limit));
 
+        
+
         return {
           list,
           offset,
-          totalPage,
-          limit,
-        };
+          totalPage,  
+        }
       }
 
       const response = await workshopRepository.getWorkshopList(page, limit);
@@ -151,4 +152,24 @@ export const workshopService = {
       throw e;
     }
   },
+
+  updateWorkshop: async(id, payload) => {
+    try {
+      console.log(id, payload);
+      const result = await workshopRepository.updateWorkshop(id, payload);
+      
+      return result;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  deactivatingWorkshop: async (id) => {
+    try {
+      await workshopRepository.deactivatingWorkshop(id);
+
+    } catch (e) {
+      throw e;
+    }
+  }
 };

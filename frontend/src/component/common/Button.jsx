@@ -19,6 +19,7 @@ const Button = ({
       "text-slate-700 bg-transparent border border-slate-300 hover:bg-slate-50",
     dangerous:
       "text-white bg-red-600 hover:bg-red-700 active:bg-red-600 border border-transparent",
+    payment: "text-white bg-green-600 hover:bg-green-700 active:bg-green-600 border border-transparent"
   };
 
   return (

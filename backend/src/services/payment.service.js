@@ -1,7 +1,11 @@
 import { paymentQueue } from "../jobs/queues/payment.queue.js";
 import { redisConnection } from "../config/queue.js";
 import { paymentRepository } from "../repositories/payment.repository.js";
+import { registrationRepository } from "../repositories/registration.repository.js";
 import { encrypt } from "../utils/crypto.js";
+import NotificationContext from "./notification/notificationContext.js";
+import NodemailerStrategy from "./notification/nodemailerStrategy.js";
+import { buildRegistrationSuccessEmail } from "./notification/emailTemplate.js";
 
 export const addPaymentJob = async ({ registrationId, amount, idempotencyKey }) => {
   const idempotencyRedisKey = `idempotency:${idempotencyKey}`;
@@ -61,7 +65,8 @@ export const processWebhook = async (
       qrCodeData,
       quickChartUrl,
     });
-    
+
+    // publish to redis channel for realtime updates
     await redisConnection.publish(
       channel,
       JSON.stringify({
@@ -76,6 +81,28 @@ export const processWebhook = async (
         },
       })
     );
+
+    // Send email notification to student (best-effort)
+    try {
+      const details = await registrationRepository.getRegistrationWithDetails(registrationId);
+      if (details && details.email) {
+        const emailPayload = buildRegistrationSuccessEmail({
+          fullName: details.fullName,
+          workshopTitle: details.workshopTitle,
+          room: details.room,
+          quickChartUrl,
+        });
+
+        const context = new NotificationContext(new NodemailerStrategy());
+        await context.send({
+          to: details.email,
+          subject: emailPayload.subject,
+          html: emailPayload.html,
+        });
+      }
+    } catch (e) {
+      console.error("Failed to send registration email:", e);
+    }
   } else {
     await paymentRepository.updatePaymentFailed({
       registrationId,

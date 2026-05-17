@@ -5,8 +5,8 @@ export const registrationService = {
     try {
       const response = await api.get(`/api/registrations/${workshopId}`, {
         headers: {
-          'x-api-key': import.meta.env.VITE_API_KEY,
-        }
+          "x-api-key": import.meta.env.VITE_API_KEY,
+        },
       });
 
       return response?.data?.data;
@@ -17,10 +17,30 @@ export const registrationService = {
 
   getWorkshopConfirmedRegistrations: async (workshopId) => {
     try {
-      const response = await api.get(`/api/registrations/${workshopId}/confirmation`);
+      const response = await api.get(
+        `/api/registrations/${workshopId}/confirmation`,
+      );
       return response?.data?.data;
     } catch (e) {
       console.log(e);
     }
-  }
-}
+  },
+
+  registerWorkshop: async (workshopId) => {
+    try {
+      const response = await api.post(
+        `/api/registrations/${workshopId}`,
+        {},
+        {
+          headers: {
+            "x-api-key": import.meta.env.VITE_API_KEY,
+          },
+        },
+      );
+      return response?.data;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  },
+};

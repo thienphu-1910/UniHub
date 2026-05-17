@@ -8,21 +8,23 @@ const registrationEvent = new QueueEvents('registration', {
 const clients = new Map();
 
 const onCompleted = async ({ returnvalue }) => {
-  const { userId, workshopId, status } = returnvalue;
+  const { userId, workshopId, status, registrationId, idempotencyKey } = returnvalue;
   const key = `${workshopId}:${userId}`;
   const res = clients.get(key);
 
   if (res) {
+    res.write(`event: registration-status\n`);
     res.write(`data: ${JSON.stringify({
-      status
-    })}\n\n`);
-    res.end();
+      status,
+      registrationId,
+      idempotencyKey
+    })}\n\n`);    
   }
 
 };
 
 const onFailed = async ({ failedReason }) => {
-  
+  console.log(failedReason)
 };
 
 registrationEvent.on('completed', onCompleted);

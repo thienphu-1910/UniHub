@@ -37,7 +37,7 @@ export const workshopRepository = {
       const response = await sql`
         SELECT id, title, speaker, is_paid AS "isPaid", price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", room
         FROM workshops
-        WHERE start_time >= CURRENT_TIMESTAMP
+        WHERE start_time >= CURRENT_TIMESTAMP AND is_active = true
       `;
 
       const offset = (page - 1) * limit;
@@ -112,4 +112,49 @@ export const workshopRepository = {
       throw e;
     }
   },
+
+  updateWorkshop: async(id, {
+    title,
+    description,
+    room,
+    capacity,
+    startTime,
+    endTime,
+    registrationStartTime,
+    registrationEndTime,
+    price
+  }) => {
+    try {
+      const result = await sql`
+        UPDATE workshops
+        SET
+          title = ${title},
+          description = ${description},
+          room = ${room},
+          capacity = ${capacity},
+          start_time = ${startTime},
+          end_time = ${endTime},
+          registration_start_time = ${registrationStartTime},
+          registration_end_time = ${registrationEndTime}
+        WHERE id = ${id}
+        RETURNING id AS "workshopId", title, description, room, start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", capacity, available_slots AS "availableSlots", price 
+      `; 
+
+      return result;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  deactivatingWorkshop: async (id) => {
+    try {
+      await sql`
+      UPDATE workshops
+      SET is_active = false
+      WHERE id = ${id}
+    `;
+    } catch (e) {
+      throw e;
+    }
+  }
 };

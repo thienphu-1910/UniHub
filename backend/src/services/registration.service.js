@@ -12,6 +12,7 @@ import {
 import { addRegistrationJob } from "../jobs/queues/registration.queue.js";
 import { WORKSHOP_CACHE_LEAD_TIME_MS } from "../jobs/queues/workshopCache.queue.js";
 import { registrationStatuses, paymentStatuses } from "../enums/status.enum.js";
+import { success } from "zod";
 
 const getRegistrationWindow = (workshop) => ({
   registrationStartMs: new Date(workshop.registrationStartTime).getTime(),
@@ -146,7 +147,7 @@ export const registrationService = {
     }
 
     const slotKey = getWorkshopSlotsKey(workshopId);
-    const holdKey = `slot:hold:${workshopId}:${user.studentId}`;
+    const holdKey = `slot-hold-${workshopId}-${user.userId}`;
 
     const registrationId = randomUUID();
 
@@ -187,9 +188,13 @@ export const registrationService = {
         paymentStatus,
         idempotencyKey: randomUUID(),
         amount: Number.parseFloat(cachedWorkshop.price || 0),
+        holdKey,
       });
 
-      return true;
+      return {
+        success: true,
+        message: "Registration created successfully",
+      };
     } catch (error) {
       if (slotReserved) {
         try {
@@ -217,11 +222,11 @@ export const registrationService = {
 
   getRegistrationStatus: async (workshopId, userId) => {
     try {
-      const status = await registrationRepository.getRegistrationStatus(
+      const result = await registrationRepository.getRegistrationStatus(
         workshopId,
         userId,
       );
-      return status;
+      return result;
     } catch (e) {
       throw e;
     }
@@ -245,4 +250,16 @@ export const registrationService = {
       throw e;
     }
   },
+
+  getQRCodeDataByRegistrationId: async (registrationId) => {
+    try {
+      const response =
+        await registrationRepository.getQRCodeDetailsByRegistrationId(
+          registrationId,
+        );
+      return response;
+    } catch (e) {
+      throw e;
+    }
+  }
 };

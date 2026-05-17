@@ -19,7 +19,7 @@ import { userStore } from "./store/useAuthStore";
 import WorkshopDetailPage from "./pages/WorkshopDetailPage";
 import CheckinPage from "./pages/CheckinPage";
 import useOnlineStatus from "./hooks/useOnlineStatus";
-import { getAllItems, clearItems } from "./lib/indexedDB";
+import { getAllWorkshops, clearItems } from "./lib/indexedDB";
 import { checkinService } from "./services/checkinService";
 import { useRef } from "react";
 import WorkshopEdit from "./pages/WorkshopEdit";
@@ -33,16 +33,14 @@ function App() {
 
   useEffect(() => {
     const syncCheckinData = async () => {
-      const data = await getAllItems();   
-      if (data.length > 0) {
-        try {
-          const isSynced = await checkinService.syncCheckinData(user.userId, data);          
-          if (isSynced) {
-            await clearItems();
-          }
-        } catch (e) {
-          console.log(e);
-        }
+      const data = await getAllWorkshops();  
+      if (data.length === 0) return;
+      const syncData = data.flatMap(d => d.registrations);
+      console.log(syncData);
+      try {
+        const response = await checkinService.syncCheckinData(syncData);
+      } catch (e) {
+        console.log(e);
       }
     }
 
@@ -88,6 +86,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/settings" element={<SettingPage />} />
+            <Route path="/workshops" element={<WorkshopsPage />} />
             <Route
               element={
                 <RoleBasedRoute
@@ -95,7 +94,6 @@ function App() {
                 />
               }
             >
-              <Route path="/workshops" element={<WorkshopsPage />} />
               <Route path="/workshops/:id" element={<WorkshopDetailPage />} />
             </Route>
             <Route
@@ -105,12 +103,13 @@ function App() {
                 path="/create-workshops"
                 element={<CreateWorkshopPage />}
               />
-              <Route path="/workshops/:id/edit"
-              element={<WorkshopEdit />}/>
+              <Route path="/workshops/:id/edit" element={<WorkshopEdit />} />
             </Route>
 
-            <Route element={<RoleBasedRoute allowedRoles={[userRoles.STAFF]} />}>
-              <Route path="/checkin" element={<CheckinPage />} />
+            <Route
+              element={<RoleBasedRoute allowedRoles={[userRoles.STAFF]} />}
+            >
+              <Route path="/checkin/:id" element={<CheckinPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/home" replace />} />
@@ -118,7 +117,10 @@ function App() {
         </Route>
 
         {/* Redirect from root based on auth status */}
-        <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />
+        <Route
+          path="/"
+          element={<Navigate to={user ? "/home" : "/login"} replace />}
+        />
       </Routes>
     </Router>
   );

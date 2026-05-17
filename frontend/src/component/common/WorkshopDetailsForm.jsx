@@ -2,6 +2,7 @@ import FormInput from "./FormInput";
 import FormContainer from "./FormContainer";
 import { Upload, FileText, X } from "lucide-react";
 import { useRef } from "react";
+import { formatToDatetimeLocal } from "../../utils/datetime";
 
 const WorkshopDetailsForm = ({
   register,
@@ -9,6 +10,7 @@ const WorkshopDetailsForm = ({
   setValue,
   errors,
   getValues,
+  edit=false,
 }) => {
   const fileInputRef = useRef(null);
 
@@ -138,6 +140,7 @@ const WorkshopDetailsForm = ({
                 label="Start Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.startTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("startTime", {
                   required: "Start Time is required",
@@ -168,6 +171,7 @@ const WorkshopDetailsForm = ({
                 label="End Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.endTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("endTime", {
                   required: "End Time is required",
@@ -194,6 +198,7 @@ const WorkshopDetailsForm = ({
                 label="Registration Start Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.regStartTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("regStartTime", {
                   required: "Registration Start Time is required",
@@ -219,6 +224,7 @@ const WorkshopDetailsForm = ({
                 label="Registration End Time"
                 required={true}
                 type="datetime-local"
+                min={formatToDatetimeLocal(new Date())}
                 className={`w-full border rounded-md py-1 px-2 ${errors.regEndTime ? "border-red-500" : "border-gray-500 focus:border-black"}`}
                 {...register("regEndTime", {
                   required: "Registration End Time is required",
@@ -246,59 +252,61 @@ const WorkshopDetailsForm = ({
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2 items-start justify-center w-full">
-            <h2 className="font-bold text-base">PDF File Upload</h2>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current.click()}
-              className={`border border-dashed rounded-xl w-full flex flex-col items-center justify-center pt-5 pb-4 transition-colors ${
-                currentFile
-                  ? "bg-blue-50 border-blue-400"
-                  : "bg-gray-100 hover:bg-blue-100"
-              }`}
-            >
-              {currentFile ? (
-                <div className="flex flex-row justify-center items-center gap-2 px-4 w-full">
-                  <div className="relative">
-                    <FileText size={40} className="text-blue-600" />
-                    <div
-                      onClick={handleRemoveFile}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                    >
-                      <X size={12} />
+          {!edit && (
+            <div className="flex flex-col gap-2 items-start justify-center w-full">
+              <h2 className="font-bold text-base">PDF File Upload</h2>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className={`border border-dashed rounded-xl w-full flex flex-col items-center justify-center pt-5 pb-4 transition-colors ${
+                  currentFile
+                    ? "bg-blue-50 border-blue-400"
+                    : "bg-gray-100 hover:bg-blue-100"
+                }`}
+              >
+                {currentFile ? (
+                  <div className="flex flex-row justify-center items-center gap-2 px-4 w-full">
+                    <div className="relative">
+                      <FileText size={40} className="text-blue-600" />
+                      <div
+                        onClick={handleRemoveFile}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      >
+                        <X size={12} />
+                      </div>
+                    </div>
+                    <div className="overflow-hidden text-start">
+                      <p className="text-sm font-medium text-blue-800 truncate w-32">
+                        {currentFile.name}
+                      </p>
+                      <p className="text-xs text-blue-500">
+                        {(currentFile.size / 1024).toFixed(1)} KB
+                      </p>
                     </div>
                   </div>
-                  <div className="overflow-hidden text-start">
-                    <p className="text-sm font-medium text-blue-800 truncate w-32">
-                      {currentFile.name}
+                ) : (
+                  <>
+                    <Upload className="text-gray-400" />
+                    <p className="mb-1 text-sm text-gray-500 font-semibold">
+                      Click to upload
                     </p>
-                    <p className="text-xs text-blue-500">
-                      {(currentFile.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <Upload className="text-gray-400" />
-                  <p className="mb-1 text-sm text-gray-500 font-semibold">
-                    Click to upload
-                  </p>
-                  <p className="text-xs text-gray-400">PDF document only</p>
-                </>
-              )}
-            </button>
+                    <p className="text-xs text-gray-400">PDF document only</p>
+                  </>
+                )}
+              </button>
 
-            <input
-              className="hidden"
-              type="file"
-              accept=".pdf"
-              {...pdfRegisterRest}
-              ref={(e) => {
-                registerRef(e);
-                fileInputRef.current = e;
-              }}
-            />
-          </div>
+              <input
+                className="hidden"
+                type="file"
+                accept=".pdf"
+                {...pdfRegisterRest}
+                ref={(e) => {
+                  registerRef(e);
+                  fileInputRef.current = e;
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </FormContainer>

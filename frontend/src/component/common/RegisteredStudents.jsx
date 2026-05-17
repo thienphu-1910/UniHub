@@ -39,13 +39,13 @@ const RegisteredStudents = ({ workshopId }) => {
   const [error, setError] = useState(null);
 
   const filterType = {
-    1: 'pending',
-    2: 'confirmed'
+    1: 'confirmed',
+    2: 'pending'
   }
 
   const handleFilter = (type) => {
     setFilter(type);
-    if (type === 0) setStudents(students);
+    if (type === 0) setFilteredStudents(students);
     else {
       setFilteredStudents(students.filter((s) => s.status === filterType[type]));
     }
@@ -59,7 +59,7 @@ const RegisteredStudents = ({ workshopId }) => {
 
         if (isMounted) {
           setStudents(response?.list ?? []);
-          setFilter(response?.list ?? []);
+          setFilteredStudents(response?.list ?? []);
         }
       } catch (e) {
         if (isMounted) setError(e);

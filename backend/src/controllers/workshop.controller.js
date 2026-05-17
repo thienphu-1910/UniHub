@@ -67,5 +67,42 @@ export const workshopController = {
         message: "Can not get workshop detail",
       });
     }
+  },
+
+  updateWorkshop: async (req, res) => {
+    const payload = req.validatedData;
+    const id = req.params.id;
+    try {
+      const result = await workshopService.updateWorkshop(id, payload);
+
+      return res.status(200).json({
+        success: true,
+        message: "Update Workshop Successfully",
+        data: {
+          data: result,
+        }
+      })
+    } catch (e) {
+      console.log(e)
+      return res.status(500).json({
+        sucess: false,
+        message: e.message,
+      })
+    }
+  },
+  deactivatingWorkshop: async (req, res) => {
+    const id = req.params.id;
+    try {
+      await workshopService.deactivatingWorkshop(id);
+      return res.status(200).json({
+        success: true,
+        message: "Deactivating successfully",
+      })
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        message: e.message ?? ""
+      })
+    }
   }
 }

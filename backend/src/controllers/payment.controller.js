@@ -1,5 +1,6 @@
 import { Redis } from "ioredis";
 import { paymentService } from "../services/payment.service.js";
+import { registrationService } from "../services/registration.service.js";
 
 const sseSubscriber = new Redis({
   username: "default",
@@ -17,6 +18,7 @@ sseSubscriber.on("message", (channel, message) => {
 
   const payload = `data: ${message}\n\n`;
   for (const res of clients) {
+    res.write(`event: payment-result\n`);
     res.write(payload);
   }
 });
@@ -25,7 +27,7 @@ export const paymentController = {
   initiatePayment: async (req, res) => {
     try {
       const { registrationId, amount, idempotencyKey } = req.body;
-
+      console.log(req.body)
       if (!registrationId || !amount || !idempotencyKey) {
         return res.status(400).json({
           success: false,
@@ -86,6 +88,8 @@ export const paymentController = {
   },
 
   streamEvents: async (req, res) => {
+
+    //Get QR code data for a registration if registration is confirmed
     const { registrationId } = req.params;
 
     if (!registrationId) {
@@ -97,11 +101,36 @@ export const paymentController = {
 
     const channel = `channel-${registrationId}`;
 
+    //Send QR code data if Qr code is already generated for the registration in db
+    const qrCodeData =
+      await registrationService.getQRCodeDataByRegistrationId(registrationId);
+    const quickChartUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrCodeData)}&size=300x300`;
+    console.log('QR CODE DATA')
+    console.log(qrCodeData)
+    if (qrCodeData) {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders();
+      const payload = `data: ${JSON.stringify({
+        type: "PAYMENT_SUCCESS",
+        data: {
+          registrationId,
+          qrCodeData,
+          quickChartUrl,
+        },
+      })}\n\n`;
+      res.write(`event: payment-result\n`);
+      res.write(payload);
+      return res.end();
+    }
+
+
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders?.();
-
+    res.write(`event: payment-result\n`);
     const clients = channelClients.get(channel) || new Set();
     clients.add(res);
     channelClients.set(channel, clients);

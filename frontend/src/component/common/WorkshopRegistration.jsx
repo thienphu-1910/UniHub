@@ -1,10 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatToVND } from "../../utils/currency";
 import Button from "./Button";
 import { Spinner } from "flowbite-react";
 import DisabledButton from "./DisabledButton";
+import { registrationService } from "../../services/registrationService";
+import PaymentQRDialog from "./PaymentQRDialog";
+import { paymentService } from "../../services/paymentService";
+import QRCodeDialog from "./QRCodeDialog";
 
-const RegisterBar = ({ price, onRegister, loading = false }) => {
+const RegisterBar = ({
+  price,
+  onRegister,
+  loading = false,
+  status,
+  onPayment,
+  qrCodeUrl,
+  title
+}) => {
+
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="w-full ">
       <div className="flex flex-col gap-3 items-center">
@@ -21,89 +36,163 @@ const RegisterBar = ({ price, onRegister, loading = false }) => {
             <Spinner />
           </DisabledButton>
         ) : (
-          <Button onClick={onRegister}>Register</Button>
+          <>
+            {!status && <Button onClick={onRegister}>Register</Button>}
+            {status === "pending" && (
+              <Button onClick={onPayment} variant="payment">
+                Pay
+              </Button>
+            )}
+            {status === "confirmed" && (
+              <Button onClick={() => setOpen(true)} variant="payment">
+                Check In QR CODE
+              </Button>
+            )}
+            {status === "payment-processing" && (
+              <DisabledButton className="bg-green-600">
+                <Spinner />
+              </DisabledButton>
+            )}
+            {status === "prepending" && (
+              <Button
+                className="bg-green-600/50 hover:scale-100 active:scale-100"
+                variant="payment"
+              >
+                Giữ chỗ thành công, đang chờ xử lý đăng ký...
+              </Button>
+            )}
+          </>
         )}
       </div>
+      <QRCodeDialog
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        qrCodeUrl={qrCodeUrl}
+      />
     </div>
   );
 };
 
-const PaymentBar = ({ onPayment, price }) => {
-  return (
-    <div className="w-full py-5 px-4 bg-emerald-200/30 rounded-lg border border-green-500 flex flex-row">
-      <div className="w-full flex flex-col justify-start items-start">
-        <h2 className="text-2xl font-bold">Registration successful!</h2>
-        <p className="text-base font-normal">
-          Please complete your payment to secure your spot.
-        </p>
-        {/* Put the countdown lock here*/}
-      </div>
-      <div className="w-full flex flex-row gap-6 justify-end items-center">
-        <div className="flex flex-col gap-2 items-center justify-center">
-          <h2 className="text-2xl font-bold">{formatToVND(price)}</h2>
-          <span className="uppercase text-base text-slate-400 font-normal">
-            per participant
-          </span>
-        </div>
-        <div>
-          <Button className="w-fit px-8 py-1" onClick={onPayment}>
-            Pay Now
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const WorkshopRegistration = ({ workshopId, price }) => {
+const WorkshopRegistration = ({ workshopId, title, price }) => {
+  const [show, setShow] = useState(false);
   const [registration, setRegistration] = useState({});
-  const [isLoading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const [status, setStatus] = useState("pending");
-  const [isProcessing, setProcess] = useState(false);
+  const [checkinData, setCheckinData] = useState({})
 
   const onRegister = async () => {
-    setProcess(true);
+    setRegistration((r) => ({
+      ...r,
+      status: "processing",
+    }));
+    const { success, message } =
+      await registrationService.registerWorkshop(workshopId);
+    console.log(message);
+    if (success) {
+      setRegistration((r) => ({
+        ...r,
+        status: "pending",
+      }));
+    }
   };
 
-  const onPayment = async () => {};
+  const onPayment = async () => {
+    setShow(true);
+  };
 
   useEffect(() => {
-    let isMounted = true;
+    const eventSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/registrations/${workshopId}/status`,
+      { withCredentials: true },
+    );
 
-    const loadRegistrationStatus = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        //
-      } catch (e) {
-        if (isMounted) setError(e);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+    eventSource.addEventListener("registration-status", (event) => {
+      const parsedData = JSON.parse(event.data);
+      setRegistration(parsedData);
+      console.log(parsedData);
+    });
+
+    eventSource.onerror = (error) => {
+      console.error("SSE connection failed:", error);
+      eventSource.close();
     };
-
-    loadRegistrationStatus();
 
     return () => {
-      isMounted = false;
+      eventSource.close();
     };
-  }, []);
+  }, [workshopId]);
+
+
+  useEffect(() => {
+    if (!registration?.registrationId) return;
+
+    const eventSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/payments/stream/${registration.registrationId}`,
+      { withCredentials: true },
+    );
+
+    eventSource.addEventListener("payment-result", (event) => {
+      const parsedData = JSON.parse(event.data);
+      setCheckinData(parsedData.data);
+      console.log(parsedData);
+    });
+
+    eventSource.onerror = (error) => {
+      console.error("SSE connection failed:", error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+
+
+  }, [registration])
+
+  const onPayClick = async () => {
+    setShow(false);
+    try {
+      const { registrationId, idempotencyKey } = registration;
+      console.log(registration)
+      const result = await paymentService.payment(
+        registrationId,
+        idempotencyKey,
+        price,
+      );
+      if (result) {
+        setRegistration((r) => ({
+          ...r,
+          status: "payment-processing",
+        }));
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
     <div className="w-full bg-white rounded-xl border border-slate-200 p-6 sm:p-8 flex flex-col gap-8 shadow-sm">
       <h2 className="w-full text-2xl font-bold text-slate-900">Registration</h2>
 
-      {status === "pending" && (
-        <RegisterBar
+      <RegisterBar
+        price={price}
+        onRegister={onRegister}
+        loading={registration?.status === "processing"}
+        status={registration?.status}
+        onPayment={onPayment}
+        qrCodeUrl={checkinData?.qrCodeData?.qrCodeUrl || ""}
+        title={title}
+      />
+
+      {show && (
+        <PaymentQRDialog
+          title={title}
           price={price}
-          onRegister={onRegister}
-          loading={isProcessing}
+          qrurl={
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/960px-QR_code_for_mobile_English_Wikipedia.svg.png"
+          }
+          onCancel={() => setShow(false)}
+          onPayClick={onPayClick}
         />
-      )}
-      {status === "confirmed" && (
-        <PaymentBar onPayment={onPayment} price={price} />
       )}
     </div>
   );

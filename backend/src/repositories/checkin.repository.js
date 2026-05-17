@@ -6,6 +6,7 @@ export const checkinRepository = {
       await sql`
         INSERT INTO checkins (registration_id, checked_in_by)
         VALUES (${registrationId}, ${staffId})
+        ON CONFLICT (registration_id) DO NOTHING
       `;
     } catch (e) {
       throw e;
@@ -17,7 +18,7 @@ export const checkinRepository = {
       const rows = checkinData.map(data => ({
         registration_id: data.registrationId,
         checked_in_by: staffId,
-        checked_in_at: data.checkedInAt,
+        checked_in_at: data.checkinAt,
         is_offline: true,
         synced_at: new Date(),
       }));

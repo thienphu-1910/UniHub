@@ -1,5 +1,5 @@
 import z from "zod";
-import { WorkshopSchema } from "../schemas/workshops.schema.js";
+import { UpdatedWorkshopSchema, WorkshopSchema } from "../schemas/workshops.schema.js";
 
 export const workshopValidation = (req, res, next) => {
   const payload = {
@@ -19,6 +19,24 @@ export const workshopValidation = (req, res, next) => {
         sucess: false,
         message: "Invalid Data",
       })
+    }
+  }
+}
+
+export const updatedWorkshopValidation = (req, res, next) => {
+  const payload = req.body.payload;
+
+  try {
+    const workshopValidatedData = UpdatedWorkshopSchema.parse(payload);
+    req.validatedData = workshopValidatedData;
+    next();
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      console.log(e.issues);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Data"
+      });
     }
   }
 }

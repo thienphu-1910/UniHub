@@ -46,8 +46,20 @@ export const registrationRepository = {
           ) 
           SELECT registration_id, ${idempotencyKey}, ${amount}, ${paymentStatus}, NULL, NULL, NULL
           FROM new_registration
+          RETURNING idempotency_key AS "idempotencyKey"
+        ), updated_available_slots AS (
+          UPDATE workshops
+          SET available_slots = available_slots - 1
+          WHERE id = ${workshopId}
         )
-        SELECT * FROM new_registration
+        SELECT 
+          r.registration_id AS "registrationId", 
+          r."workshopId", 
+          r."userId", 
+          r.status,
+          p."idempotencyKey"
+        FROM new_registration r
+        CROSS JOIN new_payments p
       `;
 
       return response[0] ?? null;
@@ -88,11 +100,10 @@ export const registrationRepository = {
   getRegistrationStatus: async (workshopId, userId) => {
     try {
       const response = await sql`
-        SELECT status
-        FROM registrations
-        WHERE workshop_id = ${workshopId} AND user_id = ${userId}
+        SELECT r.id AS "registrationId", r.status, p.idempotency_key AS "idempotencyKey"
+        FROM registrations AS r JOIN payments AS p ON r.id = p.registration_id
+        WHERE r.workshop_id = ${workshopId} AND r.user_id = ${userId}
       `;
-
       return response[0] ?? null;
     } catch (e) {
       throw e;
@@ -120,6 +131,43 @@ export const registrationRepository = {
         FROM registrations
         WHERE workshop_id = ${workshopId}
       `;
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getQRCodeDetailsByRegistrationId: async (registrationId) => {
+    try {
+      const response = await sql`
+        SELECT qr_code AS "qrCode", qr_code_url AS "qrCodeUrl"
+        FROM registrations
+        WHERE id = ${registrationId}
+      `;
+      return response[0] ?? null;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  getRegistrationWithDetails: async (registrationId) => {
+    try {
+      const response = await sql`
+        SELECT r.id AS "registrationId",
+               r.user_id AS "userId",
+               r.workshop_id AS "workshopId",
+               u.full_name AS "fullName",
+               u.email AS "email",
+               w.title AS "workshopTitle",
+               w.room AS "room",
+               r.qr_code AS "qrCode",
+               r.qr_code_url AS "qrCodeUrl"
+        FROM registrations r
+        JOIN users u ON r.user_id = u.id
+        JOIN workshops w ON r.workshop_id = w.id
+        WHERE r.id = ${registrationId}
+      `;
+
       return response[0] ?? null;
     } catch (e) {
       throw e;

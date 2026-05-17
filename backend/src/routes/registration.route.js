@@ -25,7 +25,7 @@ registrationRoute.get(
 );
 
 registrationRoute.get(
-  "/registration/:workshopId/status",
+  "/registrations/:workshopId/status",
   auth,
   checkRole([userRoles.STUDENT]),
   registrationController.getRegistrationStatus

@@ -46,6 +46,41 @@ export const WorkshopSchema = z
     message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["endTime"],
   })
+  .superRefine((data, ctx) => {
+    if (
+      data.registrationStartTime &&
+      data.registrationEndTime &&
+      data.registrationEndTime <= data.registrationStartTime
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Registration end time must be after registration start time",
+        path: ["registrationEndTime"],
+      });
+    }
+
+    if (data.registrationEndTime && data.registrationEndTime > data.startTime) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Registration end time must be before workshop start time",
+        path: ["registrationEndTime"],
+      });
+    }
+  });
+
+export const UpdatedWorkshopSchema = z
+  .object({
+    title: z.string().trim().min(1, "Title không được để trống"),
+    description: z.string().trim(),
+    capacity: z.coerce.number().int().positive(),
+    price: z.coerce.number().min(0),
+    room: z.string().trim().min(1),
+    startTime: z.coerce.date(),
+    endTime: z.coerce.date(),
+
+    registrationStartTime: z.coerce.date(),
+    registrationEndTime: z.coerce.date(),
+  })
   .refine((data) => data.endTime > data.startTime, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["endTime"],
