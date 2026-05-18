@@ -54,24 +54,3 @@ scheduleNightlyStudentSync().catch((error) => {
 app.listen(PORT, () => {
   console.log(`Server is live on http://localhost:${PORT}`);
 });
-
-// Đảm bảo redis client đã được connect thành công trước đó
-async function deleteWorkshopKey(id) {
-  try {
-    const keyName = `workshop-${id}-info`;
-    // Thực hiện xóa key
-    const result = await redis.del([keyName]); 
-    
-    // Hàm del sẽ trả về số lượng key đã bị xóa (1 nếu xóa thành công, 0 nếu không tìm thấy key)
-    if (result === 1) {
-      console.log(`Xóa thành công key: ${keyName}`);
-    } else {
-      console.log(`Không tìm thấy key: ${keyName} để xóa`);
-    }
-  } catch (error) {
-    console.error("Lỗi khi xóa key trên Redis Cloud:", error);
-  }
-}
-
-// Gọi hàm khi cần, ví dụ:
-await deleteWorkshopKey("a3674ca3-e6f3-4db4-8931-da188c595963");

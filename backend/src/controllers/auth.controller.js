@@ -4,16 +4,16 @@ import jwt from "jsonwebtoken";
 
 const cookiesOptions = {
   httpOnly: true,
-  sameSite: "strict",
+  sameSite: "none",
   secure: true,
   path: "/",
+  domain: ".vercel.app"
 };
 
 export const authController = {
   authenticateUser: async (req, res) => {
     try {
       const user = await userService.getUserViaEmail(req.body.email);
-
       if (!user) {
         return res.status(401).json({
           message: "Can not authenticate!",
