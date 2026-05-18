@@ -7,7 +7,7 @@ const cookiesOptions = {
   sameSite: "none",
   secure: true,
   path: "/",
-  domain: "uni-hub-delta.vercel.app",
+  //domain: "uni-hub-delta.vercel.app",
 };
 
 export const authController = {
