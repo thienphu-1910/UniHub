@@ -32,20 +32,20 @@ export const workshopRepository = {
     }
   },
 
-  getWorkshopList: async (page = 1, limit = 10) => {
+    getWorkshopList: async (page = 1, limit = 10) => {
     try {
       const response = await sql`
         SELECT id, title, speaker, is_paid AS "isPaid", price, capacity, available_slots AS "availableSlots", start_time AS "startTime", end_time AS "endTime", registration_start_time AS "registrationStartTime", registration_end_time AS "registrationEndTime", room
         FROM workshops
-        WHERE start_time >= CURRENT_TIMESTAMP AND is_active = true
+        WHERE start_time <= CURRENT_TIMESTAMP AND is_active = true
       `;
 
       const offset = (page - 1) * limit;
-      const list = response.slice(offset, offset + limit);
-
+      // const list = response.slice(offset, offset + limit);
+      
       const totalPage = response.length < limit ? 1 : response.length / limit;
       return {
-        list,
+        list: response,
         offset,
         totalPage: totalPage,
         limit,

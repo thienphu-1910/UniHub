@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Button from './Button';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { CircleX, ScanLine } from 'lucide-react';
 import RegistrationCards from './RegistrationCard';
+import { getRegistrations } from '../../lib/indexedDB';
 
 const CheckinStatus = ({ status, studentName, studentId }) => {
   return (
@@ -50,7 +51,7 @@ const CheckinStatus = ({ status, studentName, studentId }) => {
 };
 
 
-const CheckinTabs = ({ handleScan, handleOpenCloseCamera, open, registrations }) => {
+const CheckinTabs = ({ handleScan, handleOpenCloseCamera, open, workshopId }) => {
 
   const mockRegistrations = [
     {
@@ -82,6 +83,19 @@ const CheckinTabs = ({ handleScan, handleOpenCloseCamera, open, registrations })
       registeredAt: "2026-05-17T10:15:30.000Z",
     },
   ];
+
+  const [registrations, setRegistrations] = useState([]);
+
+  useEffect(() => {
+    const loadRegistrations = async () => {
+      const result = await getRegistrations(workshopId);
+      console.log(result)
+      setRegistrations(result)
+    }
+
+    loadRegistrations();
+  }, [workshopId])
+
   return (
     <div className="w-full h-full flex-1 grid grid-cols-2 gap-5">
       <div className="h-full w-full flex flex-col gap-5 bg-white border border-gray-200 rounded-xl px-5 py-4">

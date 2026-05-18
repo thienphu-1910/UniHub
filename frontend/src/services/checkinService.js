@@ -14,7 +14,8 @@ export const checkinService = {
       return response?.data?.success ?? false;
     } catch (e) {
       console.log(e);
-      return false;
+      console.log("ERROR OVERHERE")
+      throw e;
     }
   },
 

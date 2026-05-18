@@ -107,7 +107,7 @@ const WorkshopDetailPage = () => {
             {user.role === userRoles.ORGANIZER && (
               <RegisteredStudents workshopId={id} />
             )}
-            {user.role === userRoles.STUDENT && isRegistrationOpen && (
+            {user.role === userRoles.STUDENT && (
               <WorkshopRegistration workshopId={id} price={workshop.price} title={workshop.title} />
             )}
           </div>

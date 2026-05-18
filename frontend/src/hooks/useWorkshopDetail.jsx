@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { workshopService } from "../services/workshopService";
 
-const useWorkshopDetail = (id) => {
+const useWorkshopDetail = (id, isOnline=true) => {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [workshop, setWorkshop] = useState([]);
@@ -12,7 +12,12 @@ const useWorkshopDetail = (id) => {
     const loadWorkshopDetail = async () => {
       setLoading(true);
       setError(null);
-
+      if (isOnline === false) {
+        if (isMounted) {
+          setLoading(false);
+        }
+        return;
+      }
       try {
         const workshopRes = await workshopService.getWorkshopDetail(id);
 

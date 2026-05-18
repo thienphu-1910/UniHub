@@ -28,6 +28,7 @@ function App() {
   const user = userStore((state) => state.user);  
 
   const isOnline = useOnlineStatus();  
+  console.log(isOnline);
   const prevIsOnline = useRef(null);
   const isStaff = user?.role === userRoles.STAFF;
 
