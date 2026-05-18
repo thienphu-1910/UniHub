@@ -19,7 +19,7 @@ import redis from "./config/redis.js";
 
 const app = express();
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://uni-hub-delta.vercel.app", "https://uni-5y1da16qf-thienphu-1910s-projects.vercel.app"],
+  origin: ["http://localhost:3000", "https://uni-hub-delta.vercel.app"],
 
   credentials: true,
 
