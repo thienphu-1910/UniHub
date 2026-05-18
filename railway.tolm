@@ -1,7 +1,0 @@
-[build]
-builder = "nixpacks"
-buildCommand = "cd backend && npm install"   # adjust for your stack
-
-[deploy]
-startCommand = "cd backend && npm start"     # adjust for your stack
-healthcheckPath = "/"
